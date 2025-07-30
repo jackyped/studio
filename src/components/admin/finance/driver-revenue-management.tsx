@@ -4,10 +4,15 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal } from 'lucide-react';
+import { Search, MoreHorizontal, CheckCircle2, History, FileText } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DateRangePicker } from '@/components/date-range-picker';
+import { useToast } from '@/hooks/use-toast';
+import { Label } from '../ui/label';
 
 type PayoutStatus = 'Paid' | 'Pending' | 'Requested' | 'Failed';
 
@@ -33,6 +38,9 @@ export function DriverRevenueManagement() {
   const [revenues, setRevenues] = useState(mockDriverRevenue);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<DriverRevenue | null>(null);
+  const { toast } = useToast();
 
   const filteredRevenues = useMemo(() => {
     let filtered = revenues;
@@ -44,6 +52,16 @@ export function DriverRevenueManagement() {
       r.driverId.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, revenues, statusFilter]);
+
+  const handleOpenHistory = (driver: DriverRevenue) => {
+    setSelectedDriver(driver);
+    setIsHistoryOpen(true);
+  };
+  
+  const handleApprovePayout = (driverId: string) => {
+    setRevenues(revenues.map(r => r.driverId === driverId ? { ...r, status: 'Paid', lastPayoutDate: new Date().toISOString().split('T')[0] } : r));
+    toast({ title: 'Payout Approved', description: `Payout for driver ${driverId} has been marked as paid.` });
+  };
 
   const getStatusBadgeVariant = (status: PayoutStatus) => {
     switch (status) {
@@ -67,7 +85,8 @@ export function DriverRevenueManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <DateRangePicker />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -120,11 +139,36 @@ export function DriverRevenueManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>View Payout History</DropdownMenuItem>
-                       <DropdownMenuItem>View Delivery History</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleOpenHistory(revenue)}>
+                        <History className="mr-2 h-4 w-4" />
+                        View Payout History
+                      </DropdownMenuItem>
+                       <DropdownMenuItem>
+                        <FileText className="mr-2 h-4 w-4" />
+                        View Delivery History
+                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                        {revenue.status === 'Requested' && (
-                        <DropdownMenuItem>Approve Payout</DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-green-500"/>
+                                Approve Payout
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Approve Payout?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will mark the payout of ${revenue.netBalance.toFixed(2)} as paid for {revenue.driverName}. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleApprovePayout(revenue.driverId)}>Confirm & Approve</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                       <DropdownMenuItem>Adjust Balance</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -135,6 +179,25 @@ export function DriverRevenueManagement() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Payout History for {selectedDriver?.driverName}</DialogTitle>
+                <DialogDescription>
+                    Viewing all past payout records.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <p className="text-center text-muted-foreground">(Payout history feature not yet implemented)</p>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                </DialogClose>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
