@@ -70,6 +70,7 @@ export function PharmacyRevenueManagement() {
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
+            <DateRangePicker />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -122,7 +123,10 @@ export function PharmacyRevenueManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>View Statement</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <FileText className="mr-2 h-4 w-4"/>
+                        View Statement
+                      </DropdownMenuItem>
                       <DropdownMenuItem>View Order History</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>Initiate Payout</DropdownMenuItem>
