@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -54,6 +55,27 @@ const mockOrders: Order[] = [
     { id: 'ORD005', customerName: 'Alice Johnson', pharmacyName: 'City Central Pharma', driverName: 'Mike Ross', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14T14:00:00Z', items: [], logs: [] },
     { id: 'ORD006', customerName: 'Eve Adams', pharmacyName: 'Wellness Rx', driverName: 'Harvey Specter', status: 'Refunded', total: 12.50, createdAt: '2024-03-13T16:20:00Z', items: [], logs: [] },
 ];
+
+function FormattedDate({ dateString, includeTime = false }: { dateString: string; includeTime?: boolean }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        const date = new Date(dateString);
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+        };
+        if (includeTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+        }
+        setFormattedDate(date.toLocaleString(undefined, options));
+    }, [dateString, includeTime]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function OrderManagement() {
   const [orders, setOrders] = useState(mockOrders);
@@ -154,7 +176,7 @@ export function OrderManagement() {
                     <span>{order.status}</span>
                   </Badge>
                 </TableCell>
-                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={order.createdAt} /></TableCell>
                 <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
                 <TableCell className="text-center">
                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(order)}>
@@ -174,7 +196,7 @@ export function OrderManagement() {
           <DialogHeader>
             <DialogTitle>Order Details: {selectedOrder?.id}</DialogTitle>
             <DialogDescription>
-              Viewing full details for order placed by {selectedOrder?.customerName} on {selectedOrder && new Date(selectedOrder.createdAt).toLocaleString()}.
+              Viewing full details for order placed by {selectedOrder?.customerName} on {selectedOrder && <FormattedDate dateString={selectedOrder.createdAt} includeTime />}.
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
@@ -253,7 +275,7 @@ export function OrderManagement() {
                                             <div className="pl-2">
                                                 <div className="flex items-center gap-2">
                                                     <p className="font-semibold">{log.action}</p>
-                                                    <span className="text-xs text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span>
+                                                    <span className="text-xs text-muted-foreground"><FormattedDate dateString={log.timestamp} includeTime /></span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                     <User className="h-3 w-3" />

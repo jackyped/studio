@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +50,30 @@ const mockOrders: Order[] = [
     { id: 'ORD002', customerName: 'Charlie Brown', pharmacyName: 'MediQuick Store', driverName: 'Jane Smith', status: 'Out for Delivery', total: 18.99, createdAt: '2024-03-15T11:00:00Z', items: [{id: 'PROD003', name: 'Cold-Ez Syrup', quantity: 1, price: 8.99, imageUrl: 'https://placehold.co/100x100.png'}], logs: [] },
 ];
 // --- End of copied data ---
+
+function FormattedDate({ dateString, includeTime = false }: { dateString: string | null; includeTime?: boolean }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        if (!dateString) {
+            setFormattedDate('N/A');
+            return;
+        }
+        const date = new Date(dateString);
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+        };
+        if (includeTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+        }
+        setFormattedDate(date.toLocaleString(undefined, options));
+    }, [dateString, includeTime]);
+
+    return <>{formattedDate}</>;
+}
 
 
 type CouponRecipientStatus = 'Redeemed' | 'Sent' | 'Expired';
@@ -153,7 +177,7 @@ export function CouponTracking() {
                 <SelectContent>
                     {mockDistributions.map(d => (
                         <SelectItem key={d.distributionId} value={d.distributionId}>
-                           {d.couponName} ({d.couponCode}) - Sent on {new Date(d.distributedAt).toLocaleDateString()}
+                           {d.couponName} ({d.couponCode}) - Sent on <FormattedDate dateString={d.distributedAt} />
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -181,7 +205,7 @@ export function CouponTracking() {
                         <TableCell>
                             <Badge variant={getStatusBadgeVariant(recipient.status)}>{recipient.status}</Badge>
                         </TableCell>
-                        <TableCell>{recipient.usedAt ? new Date(recipient.usedAt).toLocaleString() : 'N/A'}</TableCell>
+                        <TableCell><FormattedDate dateString={recipient.usedAt} includeTime /></TableCell>
                         <TableCell>
                             {recipient.orderId ? (
                                 <Button variant="link" className="p-0 h-auto" onClick={() => handleViewOrder(recipient.orderId!)}>
@@ -208,7 +232,7 @@ export function CouponTracking() {
           <DialogHeader>
             <DialogTitle>Order Details: {selectedOrder?.id}</DialogTitle>
             <DialogDescription>
-              Read-only view of order placed by {selectedOrder?.customerName} on {selectedOrder && new Date(selectedOrder.createdAt).toLocaleString()}.
+              Read-only view of order placed by {selectedOrder?.customerName} on {selectedOrder && <FormattedDate dateString={selectedOrder.createdAt} includeTime />}.
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
@@ -251,7 +275,7 @@ export function CouponTracking() {
                                         <div key={log.id} className="relative mb-6">
                                             <div className="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-primary -translate-x-1/2" />
                                             <div className="pl-2">
-                                                <div className="flex items-center gap-2"><p className="font-semibold">{log.action}</p><span className="text-xs text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span></div>
+                                                <div className="flex items-center gap-2"><p className="font-semibold">{log.action}</p><span className="text-xs text-muted-foreground"><FormattedDate dateString={log.timestamp} includeTime /></span></div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground"><User className="h-3 w-3" /><span>by {log.user}</span></div>
                                                 <p className="text-sm mt-1">{log.details}</p>
                                             </div>
@@ -272,5 +296,3 @@ export function CouponTracking() {
     </>
   )
 }
-
-    

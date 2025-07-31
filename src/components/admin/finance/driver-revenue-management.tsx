@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -33,6 +34,21 @@ const mockDriverRevenue: DriverRevenue[] = [
     { driverId: 'DRV005', driverName: 'Harvey Specter', totalEarnings: 4500.00, platformFee: 450.00, netBalance: 4050.00, lastPayoutDate: '2024-07-05', status: 'Paid' },
     { driverId: 'DRV007', driverName: 'Louis Litt', totalEarnings: 0, platformFee: 0, netBalance: 0, lastPayoutDate: 'N/A', status: 'Pending' },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        if (dateString === 'N/A') {
+            setFormattedDate('N/A');
+            return;
+        }
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function DriverRevenueManagement() {
   const [revenues, setRevenues] = useState(mockDriverRevenue);
@@ -125,7 +141,7 @@ export function DriverRevenueManagement() {
                 <TableCell>${revenue.totalEarnings.toFixed(2)}</TableCell>
                 <TableCell>${revenue.platformFee.toFixed(2)}</TableCell>
                 <TableCell className="font-semibold">${revenue.netBalance.toFixed(2)}</TableCell>
-                <TableCell>{revenue.lastPayoutDate !== 'N/A' ? new Date(revenue.lastPayoutDate).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell><FormattedDate dateString={revenue.lastPayoutDate} /></TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(revenue.status)}>{revenue.status}</Badge>
                 </TableCell>

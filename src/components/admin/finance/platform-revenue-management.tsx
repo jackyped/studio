@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,6 +30,17 @@ const mockTransactions: Transaction[] = [
     { id: 'TRN005', date: '2024-07-12', description: 'Refund for ORD005', type: 'Refund', status: 'Completed', amount: -3.50 },
     { id: 'TRN006', date: '2024-07-11', description: 'Server Hosting Bill', type: 'Service Fee', status: 'Pending', amount: -150.00 },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function PlatformRevenueManagement() {
   const [transactions, setTransactions] = useState(mockTransactions);
@@ -91,7 +103,7 @@ export function PlatformRevenueManagement() {
             {filteredTransactions.map(transaction => (
               <TableRow key={transaction.id}>
                 <TableCell className="font-medium">{transaction.id}</TableCell>
-                <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={transaction.date} /></TableCell>
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell>
                   <Badge variant="outline">{transaction.type}</Badge>

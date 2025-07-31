@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -30,6 +31,17 @@ const mockPharmacyRevenue: PharmacyRevenue[] = [
     { pharmacyId: 'PHM004', pharmacyName: 'City Central Pharma', totalRevenue: 5600.25, platformFee: 560.03, netPayout: 5040.22, lastSettlementDate: '2024-05-30', nextSettlementDate: '2024-06-30', status: 'Failed' },
     { pharmacyId: 'PHM005', pharmacyName: 'Wellness Rx', totalRevenue: 18900.00, platformFee: 1890.00, netPayout: 17010.00, lastSettlementDate: '2024-07-10', nextSettlementDate: '2024-08-10', status: 'Paid' },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function PharmacyRevenueManagement() {
   const [revenues, setRevenues] = useState(mockPharmacyRevenue);
@@ -109,7 +121,7 @@ export function PharmacyRevenueManagement() {
                 <TableCell>${revenue.totalRevenue.toFixed(2)}</TableCell>
                 <TableCell>${revenue.platformFee.toFixed(2)}</TableCell>
                 <TableCell className="font-semibold">${revenue.netPayout.toFixed(2)}</TableCell>
-                <TableCell>{new Date(revenue.nextSettlementDate).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={revenue.nextSettlementDate} /></TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(revenue.status)}>{revenue.status}</Badge>
                 </TableCell>

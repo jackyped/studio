@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Ticket, Clock, Users, Gift } from 'lucide-react';
+import { ArrowLeft, Ticket, Clock, Users, Gift } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -205,7 +206,6 @@ export function CouponDistribution() {
             {step < 3 ? (
               <Button onClick={nextStep} disabled={(step === 1 && !selectedCoupon) || (step === 2 && totalSelectedUsers === 0)}>
                 Next
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
                 <AlertDialog>
