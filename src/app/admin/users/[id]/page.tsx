@@ -63,12 +63,13 @@ function FormattedDate({ dateString }: { dateString: string }) {
 
 export default function UserDetailPage({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
-  const { id } = params;
+  const id = params.id;
 
   useEffect(() => {
-    // In a real app, you would fetch the user from an API
-    const foundUser = mockUsers.find(u => u.id === id);
-    setUser(foundUser || null);
+    if (id) {
+      const foundUser = mockUsers.find(u => u.id === id);
+      setUser(foundUser || null);
+    }
   }, [id]);
   
   const userOrders = user ? mockOrders.filter(o => o.customerId === user.id) : [];
