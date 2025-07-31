@@ -40,7 +40,8 @@ import {
   Search,
   PenSquare,
   BarChart2,
-  Files
+  Files,
+  Archive,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,7 +78,7 @@ const notificationMenuItems = [
     { href: '/admin/notifications/tracking', label: 'Tracking', icon: Eye },
 ];
 
-const systemMenuItems = [
+const assetsMenuItems = [
     { href: '/admin/system/files', label: 'File Management', icon: Files },
 ];
 
@@ -192,14 +193,14 @@ export function AdminSidebar() {
             <SidebarMenuItem className="flex-col">
               <CollapsibleTrigger asChild>
                   <SidebarMenuButton isActive={isActive('/admin/system')} className="w-full">
-                      <Cog />
-                      <span>System</span>
+                      <Archive />
+                      <span>Assets</span>
                       <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent asChild>
                   <SidebarMenu className="pl-6 pt-1">
-                      {systemMenuItems.map((item) => (
+                      {assetsMenuItems.map((item) => (
                           <SidebarMenuItem key={item.href}>
                               <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
                                   <Link href={item.href}>
