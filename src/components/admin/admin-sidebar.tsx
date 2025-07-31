@@ -38,7 +38,8 @@ import {
   Gift,
   Search,
   PenSquare,
-  BarChart2
+  BarChart2,
+  Files
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,6 +78,7 @@ const notificationMenuItems = [
 
 const systemMenuItems = [
     { href: '/admin/system/drug-categories', label: 'Drug Categories', icon: Tag },
+    { href: '/admin/system/files', label: 'File Management', icon: Files },
 ];
 
 const settingsMenuItems = [
