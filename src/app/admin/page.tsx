@@ -1,26 +1,30 @@
+
 'use client'
+import { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Activity, Users, Truck, DollarSign } from "lucide-react"
+import { DateRangePicker } from '@/components/date-range-picker';
+import type { DateRange } from 'react-day-picker';
+import { subDays } from 'date-fns';
 
-const salesData = [
-    { date: "2024-07-01", sales: 23 },
-    { date: "2024-07-02", sales: 35 },
-    { date: "2024-07-03", sales: 55 },
-    { date: "2024-07-04", sales: 42 },
-    { date: "2024-07-05", sales: 60 },
-    { date: "2024-07-06", sales: 54 },
-    { date: "2024-07-07", sales: 72 },
-  ];
+const allSalesData = Array.from({ length: 30 }, (_, i) => {
+    const date = subDays(new Date(), i);
+    return {
+      date: date.toISOString().split('T')[0],
+      sales: Math.floor(Math.random() * (80 - 20 + 1)) + 20,
+    };
+  }).reverse();
   
-  const usersData = [
-    { month: "Jan", users: 150 },
-    { month: "Feb", users: 230 },
-    { month: "Mar", users: 340 },
-    { month: "Apr", users: 410 },
-    { month: "May", users: 505 },
-    { month: "Jun", users: 580 },
+  const allUsersData = [
+    { date: "2024-01-15", users: 150 },
+    { date: "2024-02-10", users: 230 },
+    { date: "2024-03-05", users: 340 },
+    { date: "2024-04-20", users: 410 },
+    { date: "2024-05-18", users: 505 },
+    { date: "2024-06-25", users: 580 },
+    { date: "2024-07-10", users: 620 },
   ];
 
 const chartConfig = {
@@ -35,6 +39,44 @@ const chartConfig = {
 }
 
 export default function AdminDashboard() {
+  const [salesDate, setSalesDate] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
+  
+  const [usersDate, setUsersDate] = useState<DateRange | undefined>({
+    from: new Date(2024, 0, 1),
+    to: new Date(),
+  });
+
+  const [filteredSales, setFilteredSales] = useState(allSalesData);
+  const [filteredUsers, setFilteredUsers] = useState(allUsersData);
+  
+  useEffect(() => {
+    if (salesDate?.from && salesDate?.to) {
+      const filtered = allSalesData.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= salesDate.from! && itemDate <= salesDate.to!;
+      });
+      setFilteredSales(filtered);
+    } else {
+        setFilteredSales(allSalesData.slice(-7));
+    }
+  }, [salesDate]);
+
+  useEffect(() => {
+    if (usersDate?.from && usersDate?.to) {
+        const filtered = allUsersData.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate >= usersDate.from! && itemDate <= usersDate.to!;
+        });
+        setFilteredUsers(filtered);
+    } else {
+        setFilteredUsers(allUsersData);
+    }
+  }, [usersDate]);
+
+
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -89,19 +131,24 @@ export default function AdminDashboard() {
       <div className="grid gap-8 md:grid-cols-2">
       <Card>
           <CardHeader>
-            <CardTitle>Sales This Week</CardTitle>
-            <CardDescription>A summary of sales in the past 7 days.</CardDescription>
+             <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>Sales Overview</CardTitle>
+                    <CardDescription>A summary of sales in the selected period.</CardDescription>
+                </div>
+                <DateRangePicker date={salesDate} onDateChange={setSalesDate} />
+             </div>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
-              <BarChart data={salesData} accessibilityLayer>
+              <BarChart data={filteredSales} accessibilityLayer>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -112,18 +159,24 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>New User Growth</CardTitle>
-            <CardDescription>New user sign-ups over the last 6 months.</CardDescription>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>New User Growth</CardTitle>
+                    <CardDescription>New user sign-ups over the selected period.</CardDescription>
+                </div>
+                 <DateRangePicker date={usersDate} onDateChange={setUsersDate} />
+             </div>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                <LineChart data={usersData} accessibilityLayer>
+                <LineChart data={filteredUsers} accessibilityLayer>
                 <CartesianGrid vertical={false} />
                 <XAxis
-                  dataKey="month"
+                  dataKey="date"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short' })}
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -136,3 +189,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+    
