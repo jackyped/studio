@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -116,6 +116,11 @@ export function AdminUserManagement() {
     });
   };
 
+  const handleActivateAll = () => {
+    setUsers(users.map(u => u.status === 'Inactive' ? { ...u, status: 'Active' } : u));
+    toast({ title: 'All Users Activated', description: 'All inactive users have been set to active.' });
+  }
+
   const getStatusBadgeVariant = (status: User['status']) => {
     switch (status) {
       case 'Active': return 'default';
@@ -140,6 +145,23 @@ export function AdminUserManagement() {
           />
         </div>
         <div className="flex items-center gap-2">
+            {statusFilter === 'Inactive' && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline"><CheckCircle className="mr-2 h-4 w-4" />Activate All Users</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>This action will activate all currently visible inactive users. This cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleActivateAll}>Confirm & Activate</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
             <Button onClick={() => setIsAddUserDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Admin
