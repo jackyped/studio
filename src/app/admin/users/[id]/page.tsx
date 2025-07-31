@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -62,12 +63,13 @@ function FormattedDate({ dateString }: { dateString: string }) {
 
 export default function UserDetailPage({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
+  const { id } = params;
 
   useEffect(() => {
     // In a real app, you would fetch the user from an API
-    const foundUser = mockUsers.find(u => u.id === params.id);
+    const foundUser = mockUsers.find(u => u.id === id);
     setUser(foundUser || null);
-  }, [params.id]);
+  }, [id]);
   
   const userOrders = user ? mockOrders.filter(o => o.customerId === user.id) : [];
 
