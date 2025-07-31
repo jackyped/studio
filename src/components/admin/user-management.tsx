@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Edit, Mail, Phone, Calendar, DollarSign, Package, Shield, User, Truck, Clock } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Shield, User, Clock, Calendar, DollarSign, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
@@ -48,7 +48,18 @@ const mockOrders = [
     { id: 'ORD001', customerId: 'USR001', status: 'Delivered', total: 45.50, createdAt: '2024-03-15'},
     { id: 'ORD005', customerId: 'USR001', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14'},
     { id: 'ORD008', customerId: 'USR001', status: 'Delivered', total: 120.00, createdAt: '2024-03-10'},
-]
+];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
@@ -148,7 +159,7 @@ export function UserManagement() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge></TableCell>
                 <TableCell><Badge variant={getStatusBadgeVariant(user.status)}>{user.status}</Badge></TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={user.createdAt} /></TableCell>
                 <TableCell className="text-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -250,7 +261,6 @@ export function UserManagement() {
                     <div className="md:col-span-1 space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Profile</CardTitle>
                                 <CardDescription>User's personal information.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -267,14 +277,13 @@ export function UserManagement() {
                                 <Separator />
                                 <div className="space-y-2 text-sm">
                                     <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /> Role: <Badge variant="secondary">{selectedUser.role}</Badge></div>
-                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> Joined: {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
+                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> Joined: <FormattedDate dateString={selectedUser.createdAt} /></div>
                                     <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> Last Login: {selectedUser.lastLogin}</div>
                                 </div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Account</CardTitle>
                                 <CardDescription>Manage account status and actions.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -294,7 +303,7 @@ export function UserManagement() {
                         <div className="grid gap-6 sm:grid-cols-2">
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+                                    <CardDescription className="text-sm font-medium">Total Spent</CardDescription>
                                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
                                 <CardContent>
@@ -303,7 +312,7 @@ export function UserManagement() {
                             </Card>
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                                    <CardDescription className="text-sm font-medium">Total Orders</CardDescription>
                                     <Package className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
                                 <CardContent>
@@ -314,7 +323,6 @@ export function UserManagement() {
                         
                         <Card>
                             <CardHeader>
-                                <CardTitle>Order History</CardTitle>
                                 <CardDescription>A list of the user's recent orders.</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -332,7 +340,7 @@ export function UserManagement() {
                                             <TableRow key={order.id}>
                                                 <TableCell className="font-medium">{order.id}</TableCell>
                                                 <TableCell><Badge variant={order.status === 'Delivered' ? 'default' : 'destructive'}>{order.status}</Badge></TableCell>
-                                                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                                                <TableCell><FormattedDate dateString={order.createdAt} /></TableCell>
                                                 <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
                                             </TableRow>
                                     ))}
@@ -353,4 +361,5 @@ export function UserManagement() {
       </Dialog>
     </>
   );
-}
+
+    
