@@ -13,11 +13,11 @@ import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, Arc
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { generateProductDescription } from '@/ai/flows/pharmacy-product-descriptions';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 type ProductStatus = 'Approved' | 'Pending' | 'Rejected' | 'Shelved';
 
