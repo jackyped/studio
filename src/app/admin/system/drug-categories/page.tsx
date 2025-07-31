@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag, Sparkles, Loader2, Settings } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag, Sparkles, Loader2, Settings, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -139,9 +139,13 @@ function CategoryManager({ open, onOpenChange, categories, onCategoriesChange }:
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent>
-                                                    <DropdownMenuItem onClick={() => handleOpenForm(cat)}>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleOpenForm(cat)}>
+                                                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                    </DropdownMenuItem>
                                                     <AlertDialog>
-                                                        <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem></AlertDialogTrigger>
+                                                        <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                        </DropdownMenuItem></AlertDialogTrigger>
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -194,7 +198,7 @@ function CategoryManager({ open, onOpenChange, categories, onCategoriesChange }:
 }
 
 
-export function ProductManagement() {
+export default function DrugCategoryManagement() {
   const [products, setProducts] = useState(mockProducts);
   const [categories, setCategories] = useState(mockCategories);
   const [searchTerm, setSearchTerm] = useState('');
@@ -440,7 +444,9 @@ export function ProductManagement() {
                             <DropdownMenuSeparator />
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => handleOpenForm(product)}>Edit Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenForm(product)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                        </DropdownMenuItem>
                          {product.status === 'Approved' && (
                            <DropdownMenuItem onClick={() => handleUpdateStatus(product.id, 'Shelved')}>
                              <Archive className="mr-2 h-4 w-4" /> Globally Shelf
@@ -457,7 +463,9 @@ export function ProductManagement() {
                         <DropdownMenuSeparator />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">Delete Product</DropdownMenuItem>
+                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Product
+                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>

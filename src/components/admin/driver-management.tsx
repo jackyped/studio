@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, Loader2, PlusCircle, CheckCircle2, Eye, Car, User, FileText, Wallet, BarChart2 } from 'lucide-react';
+import { Search, MoreHorizontal, Loader2, PlusCircle, CheckCircle2, Eye, Car, User, FileText, Wallet, BarChart2, Pencil, Sparkles, Trash2 } from 'lucide-react';
 import { driverFeedbackSummary } from '@/ai/flows/review-summary';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -213,12 +213,14 @@ export function DriverManagement() {
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleOpenFormDialog(driver)}>Edit Details</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleOpenFormDialog(driver)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         disabled={!driver.feedback}
                         onClick={() => handleOpenSummaryDialog(driver)}
                       >
-                        Summarize Feedback
+                        <Sparkles className="mr-2 h-4 w-4" /> Summarize Feedback
                       </DropdownMenuItem>
                       {driver.status === 'Pending' && (
                         <AlertDialog>
@@ -243,7 +245,9 @@ export function DriverManagement() {
                       <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>

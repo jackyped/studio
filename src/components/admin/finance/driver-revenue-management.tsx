@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, CheckCircle2, History, FileText } from 'lucide-react';
+import { Search, MoreHorizontal, CheckCircle2, History, FileText, Banknote } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/date-range-picker';
 import { useToast } from '@/hooks/use-toast';
@@ -170,7 +170,9 @@ export function DriverRevenueManagement() {
                           </AlertDialogContent>
                         </AlertDialog>
                       )}
-                      <DropdownMenuItem>Adjust Balance</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Banknote className="mr-2 h-4 w-4" /> Adjust Balance
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

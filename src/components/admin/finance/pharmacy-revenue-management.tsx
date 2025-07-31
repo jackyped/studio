@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, FileText } from 'lucide-react';
+import { Search, MoreHorizontal, FileText, CheckCircle2, ShoppingCart, Banknote } from 'lucide-react';
 import { DateRangePicker } from '@/components/date-range-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -127,10 +127,16 @@ export function PharmacyRevenueManagement() {
                         <FileText className="mr-2 h-4 w-4"/>
                         View Statement
                       </DropdownMenuItem>
-                      <DropdownMenuItem>View Order History</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <ShoppingCart className="mr-2 h-4 w-4" /> View Order History
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Initiate Payout</DropdownMenuItem>
-                      <DropdownMenuItem>Mark as Paid</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Initiate Payout
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Banknote className="mr-2 h-4 w-4" /> Mark as Paid
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

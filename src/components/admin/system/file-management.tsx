@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, FileText, Download } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, FileText, Download, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -188,11 +188,15 @@ export function FileManagement() {
                         <DropdownMenuItem>
                             <Download className="mr-2 h-4 w-4" /> Download
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOpenForm(file)}>Edit Record</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenForm(file)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit Record
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">Delete Record</DropdownMenuItem>
+                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Record
+                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>
