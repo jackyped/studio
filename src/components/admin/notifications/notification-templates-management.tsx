@@ -154,7 +154,7 @@ export function NotificationTemplatesManagement() {
           <DialogHeader>
             <DialogTitle>{currentTemplate?.id ? 'Edit Template' : 'Create New Template'}</DialogTitle>
             <DialogDescription>
-                Use placeholders like `'{customer_name}'` or `'{order_id}'` which will be replaced with real data upon sending.
+              Use placeholders like {'`{customer_name}`'} or {'`{order_id}`'} which will be replaced with real data upon sending.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
