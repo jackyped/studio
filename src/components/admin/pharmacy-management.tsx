@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,6 +34,16 @@ const mockPharmacies: Pharmacy[] = [
     { id: 'PHM005', name: 'Wellness Rx', address: '222 Vita Rd, Healthville', phone: '+1-202-555-0145', status: 'Rejected', createdAt: '2024-01-05' },
     { id: 'PHM006', name: 'NewHope Medical Supplies', address: '333 Hopeful Way, Townsville', phone: '+1-202-555-0156', status: 'Pending', createdAt: '2024-03-10' },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
 
 export function PharmacyManagement() {
   const [pharmacies, setPharmacies] = useState(mockPharmacies);
@@ -148,7 +158,7 @@ export function PharmacyManagement() {
                 <TableCell>{pharmacy.address}</TableCell>
                 <TableCell>{pharmacy.phone}</TableCell>
                 <TableCell><Badge variant={getStatusBadgeVariant(pharmacy.status)}>{pharmacy.status}</Badge></TableCell>
-                <TableCell>{new Date(pharmacy.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={pharmacy.createdAt} /></TableCell>
                 <TableCell className="text-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
