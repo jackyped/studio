@@ -4,10 +4,15 @@ import { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Activity, Users, Truck, DollarSign } from "lucide-react"
+import { Activity, Users, Truck, DollarSign, Calendar as CalendarIcon } from "lucide-react"
 import { DateRangePicker } from '@/components/date-range-picker';
 import type { DateRange } from 'react-day-picker';
-import { subDays } from 'date-fns';
+import { format, subDays } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 const allSalesData = Array.from({ length: 30 }, (_, i) => {
     const date = subDays(new Date(), i);
@@ -38,16 +43,41 @@ const chartConfig = {
     }
 }
 
+function SingleDatePicker({ date, onDateChange, placeholder }: { date?: Date, onDateChange: (date?: Date) => void, placeholder: string }) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    variant={"outline"}
+                    className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>{placeholder}</span>}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+                <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={onDateChange}
+                    initialFocus
+                />
+            </PopoverContent>
+        </Popover>
+    )
+}
+
 export default function AdminDashboard() {
   const [salesDate, setSalesDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 6),
     to: new Date(),
   });
   
-  const [usersDate, setUsersDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 0, 1),
-    to: new Date(),
-  });
+  const [usersStartDate, setUsersStartDate] = useState<Date | undefined>(new Date(2024, 0, 1));
+  const [usersEndDate, setUsersEndDate] = useState<Date | undefined>(new Date());
 
   const [filteredSales, setFilteredSales] = useState(allSalesData);
   const [filteredUsers, setFilteredUsers] = useState(allUsersData);
@@ -65,16 +95,16 @@ export default function AdminDashboard() {
   }, [salesDate]);
 
   useEffect(() => {
-    if (usersDate?.from && usersDate?.to) {
+    if (usersStartDate && usersEndDate) {
         const filtered = allUsersData.filter(item => {
             const itemDate = new Date(item.date);
-            return itemDate >= usersDate.from! && itemDate <= usersDate.to!;
+            return itemDate >= usersStartDate && itemDate <= usersEndDate;
         });
         setFilteredUsers(filtered);
     } else {
         setFilteredUsers(allUsersData);
     }
-  }, [usersDate]);
+  }, [usersStartDate, usersEndDate]);
 
 
   return (
@@ -164,7 +194,16 @@ export default function AdminDashboard() {
                     <CardTitle>New User Growth</CardTitle>
                     <CardDescription>New user sign-ups over the selected period.</CardDescription>
                 </div>
-                 <DateRangePicker date={usersDate} onDateChange={setUsersDate} />
+                 <div className="flex items-center gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="users-start-date">Start Date</Label>
+                        <SingleDatePicker date={usersStartDate} onDateChange={setUsersStartDate} placeholder="Start date"/>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="users-end-date">End Date</Label>
+                        <SingleDatePicker date={usersEndDate} onDateChange={setUsersEndDate} placeholder="End date"/>
+                    </div>
+                 </div>
              </div>
           </CardHeader>
           <CardContent>
@@ -189,5 +228,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
-    
