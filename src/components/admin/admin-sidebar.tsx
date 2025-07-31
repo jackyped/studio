@@ -88,6 +88,9 @@ export function AdminSidebar() {
 
   const isActive = (path: string, exact = false) => {
     if (exact) return pathname === path;
+    // For parent items, we want to match if the path starts with the href, but not if there's a more specific match.
+    // e.g. /admin/users should not activate /admin menu item
+    if (path === '/admin') return pathname === '/admin';
     return pathname.startsWith(path);
   };
   

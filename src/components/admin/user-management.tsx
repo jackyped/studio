@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, Loader2, PlusCircle } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
 type UserStatus = 'Active' | 'Inactive' | 'Pending';
@@ -37,8 +35,6 @@ const mockUsers: User[] = [
 export function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<Partial<User> | null>(null);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
@@ -47,34 +43,6 @@ export function UserManagement() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, users]);
-  
-  const handleOpenFormDialog = (user?: User) => {
-    setCurrentUser(user || {});
-    setIsFormDialogOpen(true);
-  };
-
-  const handleSaveUser = () => {
-    // Simulate API call
-    if (currentUser?.id) {
-        // Update user
-        setUsers(users.map(u => u.id === currentUser.id ? { ...u, ...currentUser } as User : u));
-        toast({ title: "User Updated", description: `Details for ${currentUser.name} have been updated.` });
-    } else {
-        // Create new user
-        const newUser: User = {
-            id: `USR${String(users.length + 1).padStart(3, '0')}`,
-            name: currentUser?.name || '',
-            email: currentUser?.email || '',
-            role: currentUser?.role || 'Customer',
-            status: 'Pending',
-            createdAt: new Date().toISOString().split('T')[0],
-        };
-        setUsers([...users, newUser]);
-        toast({ title: "User Created", description: `${newUser.name} has been added.` });
-    }
-    setIsFormDialogOpen(false);
-    setCurrentUser(null);
-  };
   
   const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(u => u.id !== userId));
@@ -109,9 +77,11 @@ export function UserManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={() => handleOpenFormDialog()}>
+        <Button asChild>
+          <Link href="/admin/users/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add User
+          </Link>
         </Button>
       </div>
       <div className="rounded-lg border mt-4">
@@ -144,7 +114,12 @@ export function UserManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleOpenFormDialog(user)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/users/${user.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -169,62 +144,6 @@ export function UserManagement() {
           </TableBody>
         </Table>
       </div>
-
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{currentUser?.id ? 'Edit User' : 'Add New User'}</DialogTitle>
-            <DialogDescription>
-              {currentUser?.id ? 'Update the details for this user.' : 'Enter the details for the new user.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Name</Label>
-              <Input id="name" value={currentUser?.name || ''} onChange={(e) => setCurrentUser({...currentUser, name: e.target.value})} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">Email</Label>
-                <Input id="email" type="email" value={currentUser?.email || ''} onChange={(e) => setCurrentUser({...currentUser, email: e.target.value})} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right">Role</Label>
-                <Select value={currentUser?.role} onValueChange={(value: UserRole) => setCurrentUser({...currentUser, role: value})}>
-                    <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Customer">Customer</SelectItem>
-                        <SelectItem value="Pharmacy">Pharmacy</SelectItem>
-                        <SelectItem value="Driver">Driver</SelectItem>
-                        <SelectItem value="Admin">Admin</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-             {currentUser?.id && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="status" className="text-right">Status</Label>
-                    <Select value={currentUser?.status} onValueChange={(value: UserStatus) => setCurrentUser({...currentUser, status: value})}>
-                        <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select a status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleSaveUser}>Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
