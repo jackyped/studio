@@ -10,10 +10,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
 type UserStatus = 'Active' | 'Inactive' | 'Pending';
@@ -29,12 +31,18 @@ type User = {
 };
 
 const mockUsers: User[] = [
+    { id: 'USR003', name: 'John Doe', email: 'john.d@example.com', role: 'Driver', status: 'Active', createdAt: '2023-05-20', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR013', name: 'Mike Ross', email: 'mike.r@driver.com', role: 'Driver', status: 'Inactive', createdAt: '2023-08-10', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR014', name: 'Harvey Specter', email: 'harvey.s@driver.com', role: 'Driver', status: 'Active', createdAt: '2022-11-25', avatarUrl: 'https://placehold.co/100x100.png' },
+];
+
+const allMockUsers: User[] = [
+    ...mockUsers,
     { id: 'USR001', name: 'Alice Johnson', email: 'alice@example.com', role: 'Customer', status: 'Active', createdAt: '2023-10-26', avatarUrl: 'https://placehold.co/100x100.png' },
     { id: 'USR002', name: 'Bob Williams', email: 'bob@pharmacy.com', role: 'Pharmacy', status: 'Active', createdAt: '2023-09-15', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR003', name: 'John Doe', email: 'john.d@example.com', role: 'Driver', status: 'Active', createdAt: '2023-05-20', avatarUrl: 'https://placehold.co/100x100.png' },
     { id: 'USR004', name: 'Admin User', email: 'admin@medichain.com', role: 'Admin', status: 'Active', createdAt: '2023-01-01', avatarUrl: 'https://placehold.co/100x100.png' },
     { id: 'USR005', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Customer', status: 'Inactive', createdAt: '2024-01-10', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', avatarUrl: 'https://placehold.co/100x100.png' },
 ];
 
 function FormattedDate({ dateString }: { dateString: string }) {
@@ -47,11 +55,14 @@ function FormattedDate({ dateString }: { dateString: string }) {
     return <>{formattedDate}</>;
 }
 
+const PAGE_SIZE = 10;
+
 export function DriverUserManagement() {
-  const [users, setUsers] = useState(() => mockUsers.filter(u => u.role === 'Driver'));
+  const [users, setUsers] = useState(() => allMockUsers.filter(u => u.role === 'Driver'));
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
@@ -59,11 +70,25 @@ export function DriverUserManagement() {
     if (statusFilter !== 'All') {
         filtered = filtered.filter(user => user.status === statusFilter);
     }
-    return filtered.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    if (searchTerm) {
+        filtered = filtered.filter(user =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    return filtered;
   }, [searchTerm, users, statusFilter]);
+
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredUsers, currentPage]);
+
+  const handleUpdateStatus = (userId: string, newStatus: UserStatus) => {
+    setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u));
+    toast({ title: 'Status Updated', description: `User status has been updated to ${newStatus}.` });
+  };
   
   const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(u => u.id !== userId));
@@ -74,12 +99,13 @@ export function DriverUserManagement() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const newUser: User = {
-        id: `USR${String(mockUsers.length + users.length + 1).padStart(3, '0')}`,
+        id: `USR${String(allMockUsers.length + users.length + 1).padStart(3, '0')}`,
         name: formData.get('name') as string,
         email: formData.get('email') as string,
         role: 'Driver',
         status: 'Pending',
         createdAt: new Date().toISOString().split('T')[0],
+        avatarUrl: 'https://placehold.co/100x100.png'
     };
     setUsers([newUser, ...users]);
     setIsAddUserDialogOpen(false);
@@ -106,27 +132,29 @@ export function DriverUserManagement() {
             placeholder="Search by name or email..."
             className="pl-8"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentPage(1);
+            }}
           />
         </div>
         <div className="flex items-center gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="All">All Statuses</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                </SelectContent>
-            </Select>
             <Button onClick={() => setIsAddUserDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Driver
             </Button>
         </div>
       </div>
+
+      <Tabs value={statusFilter} onValueChange={(value) => {setStatusFilter(value); setCurrentPage(1);}} className="mt-4">
+            <TabsList>
+                <TabsTrigger value="All">All</TabsTrigger>
+                <TabsTrigger value="Active">Active</TabsTrigger>
+                <TabsTrigger value="Inactive">Inactive</TabsTrigger>
+                <TabsTrigger value="Pending">Pending</TabsTrigger>
+            </TabsList>
+      </Tabs>
+
       <div className="rounded-lg border mt-4">
         <Table>
           <TableHeader>
@@ -139,9 +167,20 @@ export function DriverUserManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map(user => (
+            {paginatedUsers.map(user => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src={user.avatarUrl} alt={user.name} />
+                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <div>{user.name}</div>
+                            <div className="text-xs text-muted-foreground">{user.id}</div>
+                        </div>
+                    </div>
+                </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell><Badge variant={getStatusBadgeVariant(user.status)}>{user.status}</Badge></TableCell>
                 <TableCell><FormattedDate dateString={user.createdAt} /></TableCell>
@@ -161,6 +200,34 @@ export function DriverUserManagement() {
                             View Details
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator/>
+                       {user.status === 'Active' && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Set Inactive</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Set User to Inactive?</AlertDialogTitle><AlertDialogDescription>This will temporarily disable the user's account. Are you sure?</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Inactive')}>Set Inactive</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                        {user.status === 'Inactive' && (
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Set Active</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Set User to Active?</AlertDialogTitle><AlertDialogDescription>This will re-enable the user's account. Are you sure?</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Active')}>Set Active</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                        {user.status === 'Pending' && (
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Approve</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Approve this Driver?</AlertDialogTitle><AlertDialogDescription>This will mark the user as Active. Are you sure?</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Active')}>Approve</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
                       <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -182,9 +249,28 @@ export function DriverUserManagement() {
                 </TableCell>
               </TableRow>
             ))}
+             {paginatedUsers.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                        No results found.
+                    </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
+
+       <div className="flex items-center justify-between mt-4">
+            <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}><ChevronsLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}><ChevronsRight className="h-4 w-4" /></Button>
+            </div>
+        </div>
 
        <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
         <DialogContent className="sm:max-w-md">
