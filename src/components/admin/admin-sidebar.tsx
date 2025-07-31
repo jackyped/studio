@@ -23,7 +23,6 @@ import {
   Ticket,
   Wallet,
   Bell,
-  HelpCircle,
   Settings,
   LogOut,
   ChevronRight,
@@ -65,8 +64,7 @@ const notificationMenuItems = [
     { href: '/admin/notifications/tracking', label: 'Tracking', icon: Eye },
 ];
 
-const helpAndSettingsItems = [
-    { href: '/admin/support', label: 'Support', icon: HelpCircle },
+const settingsMenuItems = [
     { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -149,7 +147,7 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-2">
         <SidebarMenu>
-          {helpAndSettingsItems.map((item) => (
+          {settingsMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{children: item.label}}>
                     <Link href={item.href}>
