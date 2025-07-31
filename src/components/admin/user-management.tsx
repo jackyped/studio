@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -6,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
 type UserStatus = 'Active' | 'Inactive' | 'Pending';
@@ -35,6 +39,7 @@ const mockUsers: User[] = [
 export function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
@@ -48,6 +53,25 @@ export function UserManagement() {
     setUsers(users.filter(u => u.id !== userId));
     toast({ variant: "destructive", title: "User Deleted", description: "The user has been permanently deleted." });
   }
+
+  const handleAddUser = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const newUser: User = {
+        id: `USR${String(users.length + 1).padStart(3, '0')}`,
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        role: formData.get('role') as UserRole,
+        status: 'Active',
+        createdAt: new Date().toISOString().split('T')[0],
+    };
+    setUsers([newUser, ...users]);
+    setIsAddUserDialogOpen(false);
+    toast({
+        title: "User Created",
+        description: "The new user has been successfully created.",
+    });
+  };
 
   const getStatusBadgeVariant = (status: User['status']) => {
     switch (status) {
@@ -77,11 +101,9 @@ export function UserManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button asChild>
-          <Link href="/admin/users/new">
+        <Button onClick={() => setIsAddUserDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add User
-          </Link>
         </Button>
       </div>
       <div className="rounded-lg border mt-4">
@@ -144,6 +166,54 @@ export function UserManagement() {
           </TableBody>
         </Table>
       </div>
+
+       <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to create a new user account.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddUser} className="space-y-4">
+              <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" name="name" placeholder="e.g. John Doe" required />
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input id="email" name="email" type="email" placeholder="e.g. john.doe@example.com" required />
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select name="role" defaultValue="Customer">
+                      <SelectTrigger id="role">
+                          <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Customer">Customer</SelectItem>
+                          <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                          <SelectItem value="Driver">Driver</SelectItem>
+                          <SelectItem value="Admin">Admin</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" name="password" type="password" placeholder="Create a strong password" required />
+              </div>
+               <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Create User
+                  </Button>
+              </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
