@@ -10,14 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Shield, User, Clock, Calendar, DollarSign, Package } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
 type UserStatus = 'Active' | 'Inactive' | 'Pending';
@@ -29,25 +25,16 @@ type User = {
   role: UserRole;
   status: UserStatus;
   createdAt: string;
-  totalSpent?: number;
-  totalOrders?: number;
-  lastLogin?: string;
   avatarUrl?: string;
 };
 
 const mockUsers: User[] = [
-    { id: 'USR001', name: 'Alice Johnson', email: 'alice@example.com', role: 'Customer', status: 'Active', createdAt: '2023-10-26', totalSpent: 1250.75, totalOrders: 15, lastLogin: '2024-03-15', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR002', name: 'Bob Williams', email: 'bob@pharmacy.com', role: 'Pharmacy', status: 'Active', createdAt: '2023-09-15', totalSpent: 0, totalOrders: 0, lastLogin: '2024-03-14', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR003', name: 'John Doe', email: 'john.d@example.com', role: 'Driver', status: 'Active', createdAt: '2023-05-20', totalSpent: 0, totalOrders: 0, lastLogin: '2024-03-16', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR004', name: 'Admin User', email: 'admin@medichain.com', role: 'Admin', status: 'Active', createdAt: '2023-01-01', totalSpent: 0, totalOrders: 0, lastLogin: '2024-03-16', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR005', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Customer', status: 'Inactive', createdAt: '2024-01-10', totalSpent: 50.20, totalOrders: 2, lastLogin: '2024-02-20', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', totalSpent: 0, totalOrders: 0, lastLogin: 'N/A', avatarUrl: 'https://placehold.co/100x100.png' },
-];
-
-const mockOrders = [
-    { id: 'ORD001', customerId: 'USR001', status: 'Delivered', total: 45.50, createdAt: '2024-03-15'},
-    { id: 'ORD005', customerId: 'USR001', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14'},
-    { id: 'ORD008', customerId: 'USR001', status: 'Delivered', total: 120.00, createdAt: '2024-03-10'},
+    { id: 'USR001', name: 'Alice Johnson', email: 'alice@example.com', role: 'Customer', status: 'Active', createdAt: '2023-10-26', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR002', name: 'Bob Williams', email: 'bob@pharmacy.com', role: 'Pharmacy', status: 'Active', createdAt: '2023-09-15', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR003', name: 'John Doe', email: 'john.d@example.com', role: 'Driver', status: 'Active', createdAt: '2023-05-20', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR004', name: 'Admin User', email: 'admin@medichain.com', role: 'Admin', status: 'Active', createdAt: '2023-01-01', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR005', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Customer', status: 'Inactive', createdAt: '2024-01-10', avatarUrl: 'https://placehold.co/100x100.png' },
+    { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', avatarUrl: 'https://placehold.co/100x100.png' },
 ];
 
 function FormattedDate({ dateString }: { dateString: string }) {
@@ -60,8 +47,8 @@ function FormattedDate({ dateString }: { dateString: string }) {
     return <>{formattedDate}</>;
 }
 
-export function UserManagement() {
-  const [users, setUsers] = useState(mockUsers);
+export function DriverUserManagement() {
+  const [users, setUsers] = useState(() => mockUsers.filter(u => u.role === 'Driver'));
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
@@ -87,18 +74,18 @@ export function UserManagement() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const newUser: User = {
-        id: `USR${String(users.length + 1).padStart(3, '0')}`,
+        id: `USR${String(mockUsers.length + users.length + 1).padStart(3, '0')}`,
         name: formData.get('name') as string,
         email: formData.get('email') as string,
-        role: formData.get('role') as UserRole,
-        status: 'Active',
+        role: 'Driver',
+        status: 'Pending',
         createdAt: new Date().toISOString().split('T')[0],
     };
     setUsers([newUser, ...users]);
     setIsAddUserDialogOpen(false);
     toast({
         title: "User Created",
-        description: "The new user has been successfully created.",
+        description: "The new driver has been successfully created and is pending approval.",
     });
   };
 
@@ -109,15 +96,7 @@ export function UserManagement() {
       case 'Pending': return 'secondary';
     }
   };
-  
-  const getRoleBadgeVariant = (role: User['role']) => {
-    switch (role) {
-      case 'Admin': return 'default';
-      case 'Pharmacy': return 'secondary';
-      default: return 'outline';
-    }
-  };
-  
+
   return (
     <>
       <div className="flex items-center justify-between gap-4">
@@ -144,7 +123,7 @@ export function UserManagement() {
             </Select>
             <Button onClick={() => setIsAddUserDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add User
+                Add Driver
             </Button>
         </div>
       </div>
@@ -154,7 +133,6 @@ export function UserManagement() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead className="text-center">Actions</TableHead>
@@ -165,7 +143,6 @@ export function UserManagement() {
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge></TableCell>
                 <TableCell><Badge variant={getStatusBadgeVariant(user.status)}>{user.status}</Badge></TableCell>
                 <TableCell><FormattedDate dateString={user.createdAt} /></TableCell>
                 <TableCell className="text-center">
@@ -212,9 +189,9 @@ export function UserManagement() {
        <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>Add New Driver</DialogTitle>
             <DialogDescription>
-              Fill out the form below to create a new user account.
+              Fill out the form below to create a new driver account.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddUser} className="space-y-4">
@@ -226,20 +203,6 @@ export function UserManagement() {
                   <Label htmlFor="email">Email Address</Label>
                   <Input id="email" name="email" type="email" placeholder="e.g. john.doe@example.com" required />
               </div>
-               <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <Select name="role" defaultValue="Customer">
-                      <SelectTrigger id="role">
-                          <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Customer">Customer</SelectItem>
-                          <SelectItem value="Pharmacy">Pharmacy</SelectItem>
-                          <SelectItem value="Driver">Driver</SelectItem>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                      </SelectContent>
-                  </Select>
-              </div>
               <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" name="password" type="password" placeholder="Create a strong password" required />
@@ -250,7 +213,7 @@ export function UserManagement() {
                   </DialogClose>
                   <Button type="submit">
                       <UserPlus className="mr-2 h-4 w-4" />
-                      Create User
+                      Create Driver
                   </Button>
               </DialogFooter>
           </form>
