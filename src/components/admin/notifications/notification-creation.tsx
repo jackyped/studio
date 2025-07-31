@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,6 +33,16 @@ const mockNotifications: Notification[] = [
   { id: 'NTF002', title: 'New Feature: Faster Checkout', content: 'We have launched a new feature that will make your checkout process faster and smoother. Check it out now!', status: 'Draft', audience: 'Customers', createdAt: '2024-03-12', updatedAt: '2024-03-12' },
   { id: 'NTF003', title: 'Holiday Delivery Schedule', content: 'Please be aware of the updated delivery schedule for the upcoming holiday season to avoid delays.', status: 'Draft', audience: 'Drivers', createdAt: '2024-03-01', updatedAt: '2024-03-05' },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
 
 export function NotificationCreation() {
   const [notifications, setNotifications] = useState(mockNotifications);
@@ -123,7 +134,7 @@ export function NotificationCreation() {
                 </TableCell>
                 <TableCell><Badge variant="outline">{notification.audience}</Badge></TableCell>
                 <TableCell><Badge variant={getStatusBadgeVariant(notification.status)}>{notification.status}</Badge></TableCell>
-                <TableCell>{new Date(notification.updatedAt).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={notification.updatedAt} /></TableCell>
                 <TableCell className="text-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
