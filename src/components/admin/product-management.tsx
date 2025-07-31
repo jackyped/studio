@@ -9,13 +9,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { generateProductDescription } from '@/ai/flows/pharmacy-product-descriptions';
 
 type ProductStatus = 'Approved' | 'Pending' | 'Rejected' | 'Shelved';
 type ProductCategory = 'All Categories' | 'Cold & Flu' | 'Pain Relief' | 'Vitamins' | 'Prescription' | 'First Aid';
@@ -75,6 +76,9 @@ export function ProductManagement() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product> | null>(null);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isAiConfirmOpen, setIsAiConfirmOpen] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<{description?: string; usage?: string} | null>(null);
   const { toast } = useToast();
 
   const filteredProducts = useMemo(() => {
@@ -115,30 +119,44 @@ export function ProductManagement() {
   }
   
   const handleSaveProduct = () => {
-    if (currentProduct?.id) {
-        setProducts(products.map(p => p.id === currentProduct.id ? { ...p, ...currentProduct } as Product : p));
-        toast({ title: "Product Updated", description: `Details for ${currentProduct.name} have been updated.` });
+    if (generatedContent) {
+        setIsAiConfirmOpen(true);
+    } else {
+        saveProduct();
+    }
+  };
+  
+  const saveProduct = () => {
+    const productDataToSave = generatedContent ? { ...currentProduct, description: generatedContent.description, usageInstructions: generatedContent.usage } : currentProduct;
+  
+    if (productDataToSave?.id) {
+        setProducts(products.map(p => p.id === productDataToSave.id ? { ...p, ...productDataToSave } as Product : p));
+        toast({ title: "Product Updated", description: `Details for ${productDataToSave.name} have been updated.` });
     } else {
         const newProduct: Product = {
             id: `PROD${String(products.length + 1).padStart(3, '0')}`,
-            name: currentProduct?.name || 'New Product',
+            name: productDataToSave?.name || 'New Product',
             pharmacyName: 'Platform-Managed',
             category: 'Pain Relief',
             price: 0,
             stock: 0,
             status: 'Pending',
             imageUrl: 'https://placehold.co/100x100.png',
-            description: '',
-            usageInstructions: '',
+            description: productDataToSave?.description || '',
+            usageInstructions: productDataToSave?.usageInstructions || '',
             createdAt: new Date().toISOString().split('T')[0],
             logs: [],
-            ...currentProduct
+            ...productDataToSave
         };
         setProducts([newProduct, ...products]);
         toast({ title: "Product Added", description: `${newProduct.name} has been added and is pending approval.` });
     }
+    
+    // Reset states
     setIsFormOpen(false);
     setCurrentProduct(null);
+    setGeneratedContent(null);
+    setIsAiConfirmOpen(false);
   };
 
   const handleUpdateStatus = (productId: string, status: ProductStatus) => {
@@ -150,6 +168,30 @@ export function ProductManagement() {
     setProducts(products.filter(p => p.id !== productId));
     toast({ variant: "destructive", title: "Product Deleted", description: "The product has been permanently deleted from the catalog." });
   };
+
+  const handleAiGenerate = async () => {
+    if (!currentProduct?.name || !currentProduct?.category) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please provide a product name and category before generating.'});
+        return;
+    }
+    setIsAiGenerating(true);
+    try {
+        const result = await generateProductDescription({
+            name: currentProduct.name,
+            category: currentProduct.category,
+            description: currentProduct.description || '',
+            usage: currentProduct.usageInstructions || '',
+        });
+        setGeneratedContent({description: result.description, usage: result.usage});
+        setCurrentProduct(prev => ({...prev, description: result.description, usageInstructions: result.usage}));
+        toast({ title: 'Content Generated', description: 'AI has generated the product description and usage.' });
+    } catch (error) {
+        console.error("AI generation failed:", error);
+        toast({ variant: 'destructive', title: 'AI Error', description: 'Failed to generate content. Please try again.' });
+    } finally {
+        setIsAiGenerating(false);
+    }
+  }
 
   const getStatusBadgeVariant = (status: ProductStatus) => {
     switch (status) {
@@ -330,7 +372,7 @@ export function ProductManagement() {
       </main>
 
       {/* Product Edit/Create Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(isOpen) => { setIsFormOpen(isOpen); if (!isOpen) setGeneratedContent(null); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{currentProduct?.id ? 'Edit Product' : 'Add New Product'}</DialogTitle>
@@ -362,14 +404,22 @@ export function ProductManagement() {
               <Label htmlFor="price" className="text-right">Price</Label>
               <Input id="price" type="number" value={currentProduct?.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: parseFloat(e.target.value)})} className="col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
+            <div className="relative grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="description" className="text-right pt-2">Description</Label>
               <Textarea id="description" value={currentProduct?.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} className="col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="usage" className="text-right">Usage Instructions</Label>
+            <div className="relative grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="usage" className="text-right pt-2">Usage Instructions</Label>
               <Textarea id="usage" value={currentProduct?.usageInstructions || ''} onChange={(e) => setCurrentProduct({...currentProduct, usageInstructions: e.target.value})} className="col-span-3" />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <div/>
+                <Button variant="outline" onClick={handleAiGenerate} disabled={isAiGenerating} className="col-span-3">
+                    {isAiGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    {isAiGenerating ? 'Generating...' : 'AI-Complete Description & Usage'}
+                </Button>
+            </div>
+
             {currentProduct?.id && (
               <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="status" className="text-right">Status</Label>
@@ -388,7 +438,7 @@ export function ProductManagement() {
             )}
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline" onClick={() => setGeneratedContent(null)}>Cancel</Button></DialogClose>
             <Button onClick={handleSaveProduct}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
@@ -447,6 +497,22 @@ export function ProductManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Confirmation Dialog */}
+       <AlertDialog open={isAiConfirmOpen} onOpenChange={setIsAiConfirmOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Confirm AI-Generated Content</AlertDialogTitle>
+                <AlertDialogDescription>
+                    The description and usage instructions were generated by AI. Please review them carefully before saving.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setGeneratedContent(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={saveProduct}>Confirm & Save</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+       </AlertDialog>
     </div>
   );
 }
