@@ -1,13 +1,14 @@
 
 'use client'
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Activity, Users, Truck, DollarSign } from "lucide-react"
+import { Activity, Users, Truck, DollarSign, Search } from "lucide-react"
 import { DateRangePicker } from '@/components/date-range-picker';
 import type { DateRange } from 'react-day-picker';
 import { subDays } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 const allSalesData = Array.from({ length: 30 }, (_, i) => {
     const date = subDays(new Date(), i);
@@ -49,10 +50,10 @@ export default function AdminDashboard() {
     to: new Date(),
   });
 
-  const [filteredSales, setFilteredSales] = useState(allSalesData);
+  const [filteredSales, setFilteredSales] = useState(() => allSalesData.slice(-7));
   const [filteredUsers, setFilteredUsers] = useState(allUsersData);
   
-  useEffect(() => {
+  const handleFilterSales = () => {
     if (salesDate?.from && salesDate?.to) {
       const from = new Date(salesDate.from.setHours(0,0,0,0));
       const to = new Date(salesDate.to.setHours(23,59,59,999));
@@ -61,12 +62,10 @@ export default function AdminDashboard() {
         return itemDate >= from && itemDate <= to;
       });
       setFilteredSales(filtered);
-    } else {
-        setFilteredSales(allSalesData.slice(-7));
     }
-  }, [salesDate]);
+  };
 
-  useEffect(() => {
+  const handleFilterUsers = () => {
     if (usersDate?.from && usersDate?.to) {
         const from = new Date(usersDate.from.setHours(0,0,0,0));
         const to = new Date(usersDate.to.setHours(23,59,59,999));
@@ -75,10 +74,8 @@ export default function AdminDashboard() {
             return itemDate >= from && itemDate <= to;
         });
         setFilteredUsers(filtered);
-    } else {
-        setFilteredUsers(allUsersData);
     }
-  }, [usersDate]);
+  };
 
 
   return (
@@ -140,7 +137,13 @@ export default function AdminDashboard() {
                     <CardTitle>Sales Overview</CardTitle>
                     <CardDescription>A summary of sales in the selected period.</CardDescription>
                 </div>
-                <DateRangePicker date={salesDate} onDateChange={setSalesDate} />
+                <div className="flex items-center gap-2">
+                  <DateRangePicker date={salesDate} onDateChange={setSalesDate} />
+                  <Button onClick={handleFilterSales} size="icon">
+                    <Search className="h-4 w-4" />
+                    <span className="sr-only">Query Sales</span>
+                  </Button>
+                </div>
              </div>
           </CardHeader>
           <CardContent>
@@ -168,7 +171,13 @@ export default function AdminDashboard() {
                     <CardTitle>New User Growth</CardTitle>
                     <CardDescription>New user sign-ups over the selected period.</CardDescription>
                 </div>
-                 <DateRangePicker date={usersDate} onDateChange={setUsersDate} />
+                 <div className="flex items-center gap-2">
+                    <DateRangePicker date={usersDate} onDateChange={setUsersDate} />
+                    <Button onClick={handleFilterUsers} size="icon">
+                        <Search className="h-4 w-4" />
+                        <span className="sr-only">Query Users</span>
+                    </Button>
+                 </div>
              </div>
           </CardHeader>
           <CardContent>
