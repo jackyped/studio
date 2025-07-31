@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,6 +35,17 @@ const mockFiles: FileRecord[] = [
 ];
 
 const PAGE_SIZE = 10;
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
 
 export function FileManagement() {
   const [files, setFiles] = useState(mockFiles);
@@ -161,7 +173,7 @@ export function FileManagement() {
                     </div>
                   </TableCell>
                   <TableCell><Badge variant="outline">{file.category}</Badge></TableCell>
-                  <TableCell>{new Date(file.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell><FormattedDate dateString={file.createdAt} /></TableCell>
                   <TableCell>{file.fileSize}</TableCell>
                   <TableCell className="text-center">
                     <DropdownMenu>
@@ -263,4 +275,5 @@ export function FileManagement() {
       </Dialog>
     </div>
   );
-}
+
+    
