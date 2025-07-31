@@ -36,7 +36,9 @@ import {
   Cog,
   Tag,
   Gift,
-  Search
+  Search,
+  PenSquare,
+  BarChart2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,28 +54,28 @@ const menuItems = [
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
 ];
 
-const couponMenuItems = [
-    { href: '/admin/promotions', label: 'Coupon List', icon: Ticket },
-    { href: '/admin/promotions/distribute', label: 'Distribute Coupons', icon: Gift },
-    { href: '/admin/promotions/tracking', label: 'Coupon Tracking', icon: Search },
+const promotionMenuItems = [
+    { href: '/admin/promotions', label: 'Coupons', icon: Ticket },
+    { href: '/admin/promotions/distribute', label: 'Distribution', icon: Gift },
+    { href: '/admin/promotions/tracking', label: 'Tracking', icon: BarChart2 },
 ];
 
 const financeMenuItems = [
-    { href: '/admin/finance/overview', label: 'Financial Overview', icon: Wallet },
-    { href: '/admin/finance/platform-revenue', label: 'Platform Revenue', icon: CircleDollarSign },
-    { href: '/admin/finance/pharmacy-revenue', label: 'Pharmacy Revenue', icon: Building },
-    { href: '/admin/finance/driver-revenue', label: 'Driver Revenue', icon: UserCog },
+    { href: '/admin/finance/overview', label: 'Overview', icon: Wallet },
+    { href: '/admin/finance/platform-revenue', label: 'Platform', icon: CircleDollarSign },
+    { href: '/admin/finance/pharmacy-revenue', label: 'Pharmacies', icon: Building },
+    { href: '/admin/finance/driver-revenue', label: 'Drivers', icon: UserCog },
 ];
 
 const notificationMenuItems = [
     { href: '/admin/notifications/templates', label: 'Templates', icon: FileText },
     { href: '/admin/notifications/channels', label: 'Channels', icon: RadioTower },
-    { href: '/admin/notifications/create', label: 'Create', icon: Send },
-    { href: '/admin/notifications/publish', label: 'Publish', icon: Send },
+    { href: '/admin/notifications/create', label: 'Authoring', icon: PenSquare },
+    { href: '/admin/notifications/publish', label: 'Publishing', icon: Send },
     { href: '/admin/notifications/tracking', label: 'Tracking', icon: Eye },
 ];
 
-const systemConfigMenuItems = [
+const systemMenuItems = [
     { href: '/admin/system/drug-categories', label: 'Drug Categories', icon: Tag },
 ];
 
@@ -111,13 +113,13 @@ export function AdminSidebar() {
               <CollapsibleTrigger asChild>
                   <SidebarMenuButton isActive={isActive('/admin/promotions')} className="w-full">
                       <Ticket />
-                      <span>Coupon Management</span>
+                      <span>Promotions</span>
                       <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent asChild>
                   <SidebarMenu className="pl-6 pt-1">
-                      {couponMenuItems.map((item) => (
+                      {promotionMenuItems.map((item) => (
                           <SidebarMenuItem key={item.href}>
                               <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
                                   <Link href={item.href}>
@@ -186,13 +188,13 @@ export function AdminSidebar() {
               <CollapsibleTrigger asChild>
                   <SidebarMenuButton isActive={isActive('/admin/system')} className="w-full">
                       <Cog />
-                      <span>System Config</span>
+                      <span>System</span>
                       <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent asChild>
                   <SidebarMenu className="pl-6 pt-1">
-                      {systemConfigMenuItems.map((item) => (
+                      {systemMenuItems.map((item) => (
                           <SidebarMenuItem key={item.href}>
                               <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
                                   <Link href={item.href}>
