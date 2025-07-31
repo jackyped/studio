@@ -34,7 +34,8 @@ import {
   RadioTower,
   Eye,
   Cog,
-  Tag
+  Tag,
+  Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,7 +49,11 @@ const menuItems = [
   { href: '/admin/drivers', label: 'Drivers', icon: Truck },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/admin/promotions', label: 'Promotions', icon: Ticket },
+];
+
+const couponMenuItems = [
+    { href: '/admin/promotions', label: 'Coupon List', icon: Ticket },
+    { href: '/admin/promotions/distribute', label: 'Distribute Coupons', icon: Gift },
 ];
 
 const financeMenuItems = [
@@ -99,6 +104,31 @@ export function AdminSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          <Collapsible asChild>
+            <SidebarMenuItem className="flex-col">
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton isActive={isActive('/admin/promotions')} className="w-full">
+                      <Ticket />
+                      <span>Coupon Management</span>
+                      <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent asChild>
+                  <SidebarMenu className="pl-6 pt-1">
+                      {couponMenuItems.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                              <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
+                                  <Link href={item.href}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                  </Link>
+                              </SidebarMenuButton>
+                          </SidebarMenuItem>
+                      ))}
+                  </SidebarMenu>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+           </Collapsible>
           <Collapsible asChild>
             <SidebarMenuItem className="flex-col">
               <CollapsibleTrigger asChild>
