@@ -35,7 +35,8 @@ import {
   Eye,
   Cog,
   Tag,
-  Gift
+  Gift,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -54,6 +55,7 @@ const menuItems = [
 const couponMenuItems = [
     { href: '/admin/promotions', label: 'Coupon List', icon: Ticket },
     { href: '/admin/promotions/distribute', label: 'Distribute Coupons', icon: Gift },
+    { href: '/admin/promotions/tracking', label: 'Coupon Tracking', icon: Search },
 ];
 
 const financeMenuItems = [
