@@ -4,14 +4,11 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, FileText, History, AlertCircle, X, ChevronsRight, Package, Truck, CheckCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Search, FileText, AlertCircle, X, ChevronsRight, Package, Truck, CheckCircle, User, Clock } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '../ui/separator';
 import Image from 'next/image';
 
 type OrderStatus = 'Pending' | 'Processing' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Refunded';
@@ -24,6 +21,14 @@ type OrderItem = {
     imageUrl: string;
 };
 
+type OrderLog = {
+    id: string;
+    timestamp: string;
+    user: string;
+    action: string;
+    details: string;
+}
+
 type Order = {
   id: string;
   customerName: string;
@@ -33,15 +38,21 @@ type Order = {
   total: number;
   createdAt: string;
   items: OrderItem[];
+  logs: OrderLog[];
 };
 
 const mockOrders: Order[] = [
-    { id: 'ORD001', customerName: 'Alice Johnson', pharmacyName: 'GoodHealth Pharmacy', driverName: 'John Doe', status: 'Delivered', total: 45.50, createdAt: '2024-03-15T10:30:00Z', items: [{id: 'PROD001', name: 'Aspirin 500mg', quantity: 2, price: 5.99, imageUrl: 'https://placehold.co/100x100.png'}]},
-    { id: 'ORD002', customerName: 'Charlie Brown', pharmacyName: 'MediQuick Store', driverName: 'Jane Smith', status: 'Out for Delivery', total: 18.99, createdAt: '2024-03-15T11:00:00Z', items: [{id: 'PROD003', name: 'Cold-Ez Syrup', quantity: 1, price: 8.99, imageUrl: 'https://placehold.co/100x100.png'}] },
-    { id: 'ORD003', customerName: 'Bob Williams', pharmacyName: 'The Corner Drugstore', driverName: null, status: 'Processing', total: 75.20, createdAt: '2024-03-15T12:45:00Z', items: [{id: 'PROD002', name: 'Vitamin C 1000mg', quantity: 3, price: 12.50, imageUrl: 'https://placehold.co/100x100.png'}] },
-    { id: 'ORD004', customerName: 'Diana Prince', pharmacyName: 'GoodHealth Pharmacy', driverName: null, status: 'Pending', total: 22.75, createdAt: '2024-03-16T09:00:00Z', items: [] },
-    { id: 'ORD005', customerName: 'Alice Johnson', pharmacyName: 'City Central Pharma', driverName: 'Mike Ross', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14T14:00:00Z', items: [] },
-    { id: 'ORD006', customerName: 'Eve Adams', pharmacyName: 'Wellness Rx', driverName: 'Harvey Specter', status: 'Refunded', total: 12.50, createdAt: '2024-03-13T16:20:00Z', items: [] },
+    { id: 'ORD001', customerName: 'Alice Johnson', pharmacyName: 'GoodHealth Pharmacy', driverName: 'John Doe', status: 'Delivered', total: 45.50, createdAt: '2024-03-15T10:30:00Z', items: [{id: 'PROD001', name: 'Aspirin 500mg', quantity: 2, price: 5.99, imageUrl: 'https://placehold.co/100x100.png'}], logs: [
+        { id: 'LOG001', timestamp: '2024-03-15T14:10:00Z', user: 'System', action: 'Order Delivered', details: 'Marked as delivered by driver John Doe.' },
+        { id: 'LOG002', timestamp: '2024-03-15T11:05:00Z', user: 'System', action: 'Out for Delivery', details: 'Order assigned to driver John Doe.' },
+        { id: 'LOG003', timestamp: '2024-03-15T10:35:00Z', user: 'Admin User', action: 'Order Processed', details: 'Pharmacy confirmed stock and processed the order.' },
+        { id: 'LOG004', timestamp: '2024-03-15T10:30:00Z', user: 'Alice Johnson', action: 'Order Created', details: 'Order placed successfully.' },
+    ]},
+    { id: 'ORD002', customerName: 'Charlie Brown', pharmacyName: 'MediQuick Store', driverName: 'Jane Smith', status: 'Out for Delivery', total: 18.99, createdAt: '2024-03-15T11:00:00Z', items: [{id: 'PROD003', name: 'Cold-Ez Syrup', quantity: 1, price: 8.99, imageUrl: 'https://placehold.co/100x100.png'}], logs: [] },
+    { id: 'ORD003', customerName: 'Bob Williams', pharmacyName: 'The Corner Drugstore', driverName: null, status: 'Processing', total: 75.20, createdAt: '2024-03-15T12:45:00Z', items: [{id: 'PROD002', name: 'Vitamin C 1000mg', quantity: 3, price: 12.50, imageUrl: 'https://placehold.co/100x100.png'}], logs: [] },
+    { id: 'ORD004', customerName: 'Diana Prince', pharmacyName: 'GoodHealth Pharmacy', driverName: null, status: 'Pending', total: 22.75, createdAt: '2024-03-16T09:00:00Z', items: [], logs: [] },
+    { id: 'ORD005', customerName: 'Alice Johnson', pharmacyName: 'City Central Pharma', driverName: 'Mike Ross', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14T14:00:00Z', items: [], logs: [] },
+    { id: 'ORD006', customerName: 'Eve Adams', pharmacyName: 'Wellness Rx', driverName: 'Harvey Specter', status: 'Refunded', total: 12.50, createdAt: '2024-03-13T16:20:00Z', items: [], logs: [] },
 ];
 
 export function OrderManagement() {
@@ -202,7 +213,7 @@ export function OrderManagement() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {selectedOrder.items.map(item => (
+                                {selectedOrder.items.length > 0 ? selectedOrder.items.map(item => (
                                 <TableRow key={item.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
@@ -214,7 +225,9 @@ export function OrderManagement() {
                                     <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
                                     <TableCell className="text-right">${(item.quantity * item.price).toFixed(2)}</TableCell>
                                 </TableRow>
-                                ))}
+                                )) : (
+                                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No items in this order.</TableCell></TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>
@@ -231,7 +244,29 @@ export function OrderManagement() {
                     <h3 className="font-semibold mb-2">Order History & Logs</h3>
                     <Card>
                         <CardContent className="pt-6">
-                            <p className="text-sm text-center text-muted-foreground">(Operation log feature not yet implemented)</p>
+                            {selectedOrder.logs.length > 0 ? (
+                                <div className="relative pl-6">
+                                    <div className="absolute left-0 top-0 h-full w-0.5 bg-border -translate-x-1/2" />
+                                    {selectedOrder.logs.map((log, index) => (
+                                        <div key={log.id} className="relative mb-6">
+                                            <div className="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-primary -translate-x-1/2" />
+                                            <div className="pl-2">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-semibold">{log.action}</p>
+                                                    <span className="text-xs text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <User className="h-3 w-3" />
+                                                    <span>by {log.user}</span>
+                                                </div>
+                                                <p className="text-sm mt-1">{log.details}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-center text-muted-foreground">No operation logs found for this order.</p>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

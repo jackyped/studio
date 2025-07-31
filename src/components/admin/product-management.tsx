@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Tag, Pill } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Tag, Pill, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +17,14 @@ import Image from 'next/image';
 
 type ProductStatus = 'Approved' | 'Pending' | 'Rejected' | 'Shelved';
 type ProductCategory = 'Cold & Flu' | 'Pain Relief' | 'Vitamins' | 'Prescription' | 'First Aid';
+
+type ModificationLog = {
+    id: string;
+    timestamp: string;
+    user: string;
+    action: string;
+    details: string;
+};
 
 type Product = {
   id: string;
@@ -30,14 +38,19 @@ type Product = {
   description: string;
   usageInstructions: string;
   createdAt: string;
+  logs: ModificationLog[];
 };
 
 const mockProducts: Product[] = [
-    { id: 'PROD001', name: 'Aspirin 500mg', pharmacyName: 'GoodHealth Pharmacy', category: 'Pain Relief', price: 5.99, stock: 150, status: 'Approved', imageUrl: 'https://placehold.co/100x100.png', description: 'Effective pain reliever for headaches, muscle pain, and fever.', usageInstructions: 'Take 1-2 tablets every 4-6 hours. Do not exceed 8 tablets in 24 hours.', createdAt: '2023-11-10' },
-    { id: 'PROD002', name: 'Vitamin C 1000mg', pharmacyName: 'Wellness Rx', category: 'Vitamins', price: 12.50, stock: 80, status: 'Approved', imageUrl: 'https://placehold.co/100x100.png', description: 'High-potency Vitamin C for immune support.', usageInstructions: 'Take one tablet daily with a meal.', createdAt: '2023-10-05' },
-    { id: 'PROD003', name: 'Cold-Ez Syrup', pharmacyName: 'MediQuick Store', category: 'Cold & Flu', price: 8.99, stock: 0, status: 'Pending', imageUrl: 'https://placehold.co/100x100.png', description: 'Multi-symptom cold and flu relief for adults.', usageInstructions: '2 teaspoons every 6 hours.', createdAt: '2024-03-15' },
-    { id: 'PROD004', name: 'Hydrocortisone Cream', pharmacyName: 'The Corner Drugstore', category: 'First Aid', price: 7.25, stock: 200, status: 'Shelved', imageUrl: 'https://placehold.co/100x100.png', description: 'Topical cream for itching and skin irritation.', usageInstructions: 'Apply a thin layer to affected area 2-3 times daily.', createdAt: '2023-01-20' },
-    { id: 'PROD005', name: 'Amoxicillin 250mg', pharmacyName: 'City Central Pharma', category: 'Prescription', price: 15.00, stock: 55, status: 'Rejected', imageUrl: 'https://placehold.co/100x100.png', description: 'Antibiotic for bacterial infections. Requires prescription.', usageInstructions: 'As directed by your physician.', createdAt: '2024-03-01' },
+    { id: 'PROD001', name: 'Aspirin 500mg', pharmacyName: 'GoodHealth Pharmacy', category: 'Pain Relief', price: 5.99, stock: 150, status: 'Approved', imageUrl: 'https://placehold.co/100x100.png', description: 'Effective pain reliever for headaches, muscle pain, and fever.', usageInstructions: 'Take 1-2 tablets every 4-6 hours. Do not exceed 8 tablets in 24 hours.', createdAt: '2023-11-10', logs: [
+        { id: 'LOG001', timestamp: '2024-03-01T10:00:00Z', user: 'Admin User', action: 'Price Update', details: 'Price changed from $5.49 to $5.99.' },
+        { id: 'LOG002', timestamp: '2024-01-15T14:30:00Z', user: 'Admin User', action: 'Approved', details: 'Initial product submission was approved.' },
+        { id: 'LOG003', timestamp: '2024-01-14T09:00:00Z', user: 'GoodHealth Pharmacy', action: 'Created', details: 'Product submitted for approval.' },
+    ]},
+    { id: 'PROD002', name: 'Vitamin C 1000mg', pharmacyName: 'Wellness Rx', category: 'Vitamins', price: 12.50, stock: 80, status: 'Approved', imageUrl: 'https://placehold.co/100x100.png', description: 'High-potency Vitamin C for immune support.', usageInstructions: 'Take one tablet daily with a meal.', createdAt: '2023-10-05', logs: [] },
+    { id: 'PROD003', name: 'Cold-Ez Syrup', pharmacyName: 'MediQuick Store', category: 'Cold & Flu', price: 8.99, stock: 0, status: 'Pending', imageUrl: 'https://placehold.co/100x100.png', description: 'Multi-symptom cold and flu relief for adults.', usageInstructions: '2 teaspoons every 6 hours.', createdAt: '2024-03-15', logs: [] },
+    { id: 'PROD004', name: 'Hydrocortisone Cream', pharmacyName: 'The Corner Drugstore', category: 'First Aid', price: 7.25, stock: 200, status: 'Shelved', imageUrl: 'https://placehold.co/100x100.png', description: 'Topical cream for itching and skin irritation.', usageInstructions: 'Apply a thin layer to affected area 2-3 times daily.', createdAt: '2023-01-20', logs: [] },
+    { id: 'PROD005', name: 'Amoxicillin 250mg', pharmacyName: 'City Central Pharma', category: 'Prescription', price: 15.00, stock: 55, status: 'Rejected', imageUrl: 'https://placehold.co/100x100.png', description: 'Antibiotic for bacterial infections. Requires prescription.', usageInstructions: 'As directed by your physician.', createdAt: '2024-03-01', logs: [] },
 ];
 
 export function ProductManagement() {
@@ -61,9 +74,13 @@ export function ProductManagement() {
     setCurrentProduct(product || {});
     setIsFormOpen(true);
   };
+
+  const handleOpenHistory = (product: Product) => {
+    setCurrentProduct(product);
+    setIsHistoryOpen(true);
+  }
   
   const handleSaveProduct = () => {
-    // This is where you would normally have an API call
     if (currentProduct?.id) {
         setProducts(products.map(p => p.id === currentProduct.id ? { ...p, ...currentProduct } as Product : p));
         toast({ title: "Product Updated", description: `Details for ${currentProduct.name} have been updated.` });
@@ -80,6 +97,7 @@ export function ProductManagement() {
             description: '',
             usageInstructions: '',
             createdAt: new Date().toISOString().split('T')[0],
+            logs: [],
             ...currentProduct
         };
         setProducts([newProduct, ...products]);
@@ -196,7 +214,7 @@ export function ProductManagement() {
                            <ArchiveRestore className="mr-2 h-4 w-4" /> Restore Product
                          </DropdownMenuItem>
                        )}
-                       <DropdownMenuItem onClick={() => setIsHistoryOpen(true)}>
+                       <DropdownMenuItem onClick={() => handleOpenHistory(product)}>
                          <History className="mr-2 h-4 w-4" /> View History
                        </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -293,11 +311,33 @@ export function ProductManagement() {
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modification History for {currentProduct?.name || 'Product'}</DialogTitle>
+            <DialogTitle>Modification History for {currentProduct?.name}</DialogTitle>
             <DialogDescription>Showing all recorded changes for this product.</DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-center text-muted-foreground">(Modification log feature not yet implemented)</p>
+          <div className="py-4 max-h-[60vh] overflow-y-auto pr-4">
+             {currentProduct?.logs && currentProduct.logs.length > 0 ? (
+                <div className="relative pl-6">
+                    <div className="absolute left-0 top-0 h-full w-0.5 bg-border -translate-x-1/2" />
+                    {currentProduct.logs.map((log) => (
+                        <div key={log.id} className="relative mb-6">
+                            <div className="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-primary -translate-x-1/2" />
+                            <div className="pl-2">
+                                <div className="flex items-center gap-2">
+                                    <p className="font-semibold">{log.action}</p>
+                                    <span className="text-xs text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <User className="h-3 w-3" />
+                                    <span>by {log.user}</span>
+                                </div>
+                                <p className="text-sm mt-1">{log.details}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-muted-foreground">No modification history found.</p>
+            )}
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
