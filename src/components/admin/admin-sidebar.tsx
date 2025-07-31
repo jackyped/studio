@@ -77,7 +77,6 @@ const notificationMenuItems = [
 ];
 
 const systemMenuItems = [
-    { href: '/admin/system/drug-categories', label: 'Drug Categories', icon: Tag },
     { href: '/admin/system/files', label: 'File Management', icon: Files },
 ];
 
