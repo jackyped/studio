@@ -10,14 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Shield, User, Clock, Calendar, DollarSign, Package } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
 type UserStatus = 'Active' | 'Inactive' | 'Pending';
@@ -44,12 +40,6 @@ const mockUsers: User[] = [
     { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', totalSpent: 0, totalOrders: 0, lastLogin: 'N/A', avatarUrl: 'https://placehold.co/100x100.png' },
 ];
 
-const mockOrders = [
-    { id: 'ORD001', customerId: 'USR001', status: 'Delivered', total: 45.50, createdAt: '2024-03-15'},
-    { id: 'ORD005', customerId: 'USR001', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14'},
-    { id: 'ORD008', customerId: 'USR001', status: 'Delivered', total: 120.00, createdAt: '2024-03-10'},
-];
-
 function FormattedDate({ dateString }: { dateString: string }) {
     const [formattedDate, setFormattedDate] = useState('');
 
@@ -59,6 +49,7 @@ function FormattedDate({ dateString }: { dateString: string }) {
 
     return <>{formattedDate}</>;
 }
+
 
 export function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
