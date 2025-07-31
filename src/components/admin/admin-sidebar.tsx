@@ -42,6 +42,8 @@ import {
   BarChart2,
   Files,
   Archive,
+  UserSquare2,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,11 +52,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/pharmacies', label: 'Pharmacies', icon: Store },
   { href: '/admin/drivers', label: 'Drivers', icon: Truck },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+];
+
+const userMenuItems = [
+    { href: '/admin/users', label: 'All Users', icon: Users },
+    { href: '/admin/users/customers', label: 'Customers', icon: UserSquare2 },
+    { href: '/admin/users/pharmacies', label: 'Pharmacies', icon: Store },
+    { href: '/admin/users/drivers', label: 'Drivers', icon: Truck },
+    { href: '/admin/users/admins', label: 'Admins', icon: ShieldCheck },
 ];
 
 const promotionMenuItems = [
@@ -114,6 +123,31 @@ export function AdminSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          <Collapsible asChild>
+            <SidebarMenuItem className="flex-col">
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton isActive={isActive('/admin/users')} className="w-full">
+                      <Users />
+                      <span>Users</span>
+                      <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent asChild>
+                  <SidebarMenu className="pl-6 pt-1">
+                      {userMenuItems.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                              <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
+                                  <Link href={item.href}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                  </Link>
+                              </SidebarMenuButton>
+                          </SidebarMenuItem>
+                      ))}
+                  </SidebarMenu>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+           </Collapsible>
           <Collapsible asChild>
             <SidebarMenuItem className="flex-col">
               <CollapsibleTrigger asChild>

@@ -64,17 +64,22 @@ function FormattedDate({ dateString }: { dateString: string }) {
 export function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
-    return users.filter(user =>
+    let filtered = users;
+    if (statusFilter !== 'All') {
+        filtered = filtered.filter(user => user.status === statusFilter);
+    }
+    return filtered.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, users]);
+  }, [searchTerm, users, statusFilter]);
   
   const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(u => u.id !== userId));
@@ -135,10 +140,23 @@ export function UserManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={() => setIsAddUserDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add User
-        </Button>
+        <div className="flex items-center gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                </SelectContent>
+            </Select>
+            <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add User
+            </Button>
+        </div>
       </div>
       <div className="rounded-lg border mt-4">
         <Table>
