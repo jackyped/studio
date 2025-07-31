@@ -7,26 +7,33 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Activity, Users, Truck, DollarSign, Search } from "lucide-react"
 import { DateRangePicker } from '@/components/date-range-picker';
 import type { DateRange } from 'react-day-picker';
-import { subDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
-const allSalesData = Array.from({ length: 30 }, (_, i) => {
-    const date = subDays(new Date(), i);
-    return {
-      date: date.toISOString().split('T')[0],
-      sales: Math.floor(Math.random() * (80 - 20 + 1)) + 20,
-    };
-  }).reverse();
+const generate2025SalesData = () => {
+    const data = [];
+    const startDate = new Date('2025-01-01');
+    const endDate = new Date('2025-12-31');
+    let currentDate = startDate;
+
+    while (currentDate <= endDate) {
+        data.push({
+            date: currentDate.toISOString().split('T')[0],
+            sales: Math.floor(Math.random() * (150 - 50 + 1)) + 50,
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return data;
+}
+
+const allSalesData = generate2025SalesData();
   
-  const allUsersData = [
-    { date: "2024-01-15", users: 150 },
-    { date: "2024-02-10", users: 230 },
-    { date: "2024-03-05", users: 340 },
-    { date: "2024-04-20", users: 410 },
-    { date: "2024-05-18", users: 505 },
-    { date: "2024-06-25", users: 580 },
-    { date: "2024-07-10", users: 620 },
-  ];
+const allUsersData = Array.from({ length: 12 }, (_, i) => {
+  const month = i + 1;
+  return {
+    date: `2025-${String(month).padStart(2, '0')}-15`,
+    users: 200 + i * 50 + Math.floor(Math.random() * 80),
+  };
+});
 
 const chartConfig = {
     sales: {
@@ -41,17 +48,32 @@ const chartConfig = {
 
 export default function AdminDashboard() {
   const [salesDate, setSalesDate] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 6),
-    to: new Date(),
+    from: new Date('2025-01-01'),
+    to: new Date('2025-01-31'),
   });
   
   const [usersDate, setUsersDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 0, 1),
-    to: new Date(),
+    from: new Date('2025-01-01'),
+    to: new Date('2025-12-31'),
   });
 
-  const [filteredSales, setFilteredSales] = useState(() => allSalesData.slice(-7));
-  const [filteredUsers, setFilteredUsers] = useState(allUsersData);
+  const [filteredSales, setFilteredSales] = useState(() => {
+    const from = new Date('2025-01-01');
+    const to = new Date('2025-01-31');
+    return allSalesData.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= from && itemDate <= to;
+    });
+  });
+  
+  const [filteredUsers, setFilteredUsers] = useState(() => {
+      const from = new Date('2025-01-01');
+      const to = new Date('2025-12-31');
+      return allUsersData.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= from && itemDate <= to;
+    });
+  });
   
   const handleFilterSales = () => {
     if (salesDate?.from && salesDate?.to) {
