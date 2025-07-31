@@ -60,18 +60,18 @@ function FormattedDate({ dateString }: { dateString: string }) {
     return <>{formattedDate}</>;
 }
 
-
-export function UserManagement() {
+export function UserManagement({ roleFilter }: { roleFilter?: string }) {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
     let filtered = users;
+    if (roleFilter) {
+      filtered = filtered.filter(user => user.role.toLowerCase() === roleFilter);
+    }
     if (statusFilter !== 'All') {
         filtered = filtered.filter(user => user.status === statusFilter);
     }
@@ -79,16 +79,11 @@ export function UserManagement() {
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, users, statusFilter]);
+  }, [searchTerm, users, statusFilter, roleFilter]);
   
   const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(u => u.id !== userId));
     toast({ variant: "destructive", title: "User Deleted", description: "The user has been permanently deleted." });
-  }
-  
-  const handleViewDetails = (user: User) => {
-    setSelectedUser(user);
-    setIsDetailDialogOpen(true);
   }
 
   const handleAddUser = (event: React.FormEvent<HTMLFormElement>) => {
@@ -126,8 +121,6 @@ export function UserManagement() {
     }
   };
   
-  const userOrders = selectedUser ? mockOrders.filter(o => o.customerId === selectedUser.id) : [];
-
   return (
     <>
       <div className="flex items-center justify-between gap-4">
@@ -188,9 +181,11 @@ export function UserManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleViewDetails(user)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/users/${user.id}`}>
+                           <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <AlertDialog>
@@ -264,120 +259,6 @@ export function UserManagement() {
           </form>
         </DialogContent>
       </Dialog>
-      
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-                <DialogTitle>User Details: {selectedUser?.name}</DialogTitle>
-                <DialogDescription>
-                    Viewing full details for {selectedUser?.email}.
-                </DialogDescription>
-            </DialogHeader>
-            {selectedUser && (
-                <div className="grid gap-6 md:grid-cols-3 max-h-[70vh] overflow-y-auto p-1">
-                    {/* Left Column - Profile */}
-                    <div className="md:col-span-1 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardDescription>User's personal information.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16">
-                                        <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
-                                        <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <h2 className="text-lg font-semibold">{selectedUser.name}</h2>
-                                        <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                                    </div>
-                                </div>
-                                <Separator />
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /> Role: <Badge variant="secondary">{selectedUser.role}</Badge></div>
-                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> Joined: <FormattedDate dateString={selectedUser.createdAt} /></div>
-                                    <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> Last Login: {selectedUser.lastLogin}</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardDescription>Manage account status and actions.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Status</Label>
-                                    <Badge variant={selectedUser.status === 'Active' ? 'default' : 'destructive'}>{selectedUser.status}</Badge>
-                                </div>
-                                <Button className="w-full">Edit User</Button>
-                                <Button variant="outline" className="w-full">Reset Password</Button>
-                                <Button variant="destructive" className="w-full">Delete User</Button>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Right Column - Stats & History */}
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardDescription className="text-sm font-medium">Total Spent</CardDescription>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">${(selectedUser.totalSpent || 0).toFixed(2)}</div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardDescription className="text-sm font-medium">Total Orders</CardDescription>
-                                    <Package className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{selectedUser.totalOrders || 0}</div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        
-                        <Card>
-                            <CardHeader>
-                                <CardDescription>A list of the user's recent orders.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Order ID</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {userOrders.map(order => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-medium">{order.id}</TableCell>
-                                                <TableCell><Badge variant={order.status === 'Delivered' ? 'default' : 'destructive'}>{order.status}</Badge></TableCell>
-                                                <TableCell><FormattedDate dateString={order.createdAt} /></TableCell>
-                                                <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                    ))}
-                                    {userOrders.length === 0 && (
-                                        <TableRow><TableCell colSpan={4} className="text-center">No orders found.</TableCell></TableRow>
-                                    )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            )}
-             <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
-
-    
+}

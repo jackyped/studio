@@ -60,10 +60,10 @@ const menuItems = [
 
 const userMenuItems = [
     { href: '/admin/users', label: 'All Users', icon: Users },
-    { href: '/admin/users/customers', label: 'Customers', icon: UserSquare2 },
-    { href: '/admin/users/pharmacies', label: 'Pharmacies', icon: Store },
-    { href: '/admin/users/drivers', label: 'Drivers', icon: Truck },
-    { href: '/admin/users/admins', label: 'Admins', icon: ShieldCheck },
+    { href: '/admin/users/customer', label: 'Customers', icon: UserSquare2 },
+    { href: '/admin/users/pharmacy', label: 'Pharmacies', icon: Store },
+    { href: '/admin/users/driver', label: 'Drivers', icon: Truck },
+    { href: '/admin/users/admin', label: 'Admins', icon: ShieldCheck },
 ];
 
 const promotionMenuItems = [
@@ -226,7 +226,7 @@ export function AdminSidebar() {
            <Collapsible asChild>
             <SidebarMenuItem className="flex-col">
               <CollapsibleTrigger asChild>
-                  <SidebarMenuButton isActive={isActive('/admin/system')} className="w-full">
+                  <SidebarMenuButton isActive={isActive('/admin/assets')} className="w-full">
                       <Archive />
                       <span>Assets</span>
                       <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
