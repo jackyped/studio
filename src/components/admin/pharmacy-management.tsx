@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -12,6 +13,7 @@ import { Search, MoreHorizontal, PlusCircle, CheckCircle2, Pencil, Trash2 } from
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type PharmacyStatus = 'Active' | 'Inactive' | 'Pending' | 'Rejected';
 
@@ -36,16 +38,24 @@ const mockPharmacies: Pharmacy[] = [
 export function PharmacyManagement() {
   const [pharmacies, setPharmacies] = useState(mockPharmacies);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [currentPharmacy, setCurrentPharmacy] = useState<Partial<Pharmacy> | null>(null);
   const { toast } = useToast();
 
   const filteredPharmacies = useMemo(() => {
-    return pharmacies.filter(pharmacy =>
-      pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pharmacy.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, pharmacies]);
+    let filtered = pharmacies;
+    if (statusFilter !== 'All') {
+      filtered = filtered.filter(pharmacy => pharmacy.status === statusFilter);
+    }
+    if (searchTerm) {
+        filtered = filtered.filter(pharmacy =>
+        pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pharmacy.address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [searchTerm, pharmacies, statusFilter]);
 
   const handleOpenFormDialog = (pharmacy?: Pharmacy) => {
     setCurrentPharmacy(pharmacy || {});
@@ -108,6 +118,17 @@ export function PharmacyManagement() {
             Add Pharmacy
         </Button>
       </div>
+
+       <Tabs value={statusFilter} onValueChange={setStatusFilter} className="mt-4">
+            <TabsList>
+                <TabsTrigger value="All">All</TabsTrigger>
+                <TabsTrigger value="Active">Active</TabsTrigger>
+                <TabsTrigger value="Pending">Pending</TabsTrigger>
+                <TabsTrigger value="Inactive">Inactive</TabsTrigger>
+                <TabsTrigger value="Rejected">Rejected</TabsTrigger>
+            </TabsList>
+      </Tabs>
+
       <div className="rounded-lg border mt-4">
         <Table>
           <TableHeader>
