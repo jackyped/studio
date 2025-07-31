@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,6 +33,16 @@ const mockTemplates: Template[] = [
   { id: 'TPL003', name: 'Password Reset', type: 'Email', subject: 'Reset Your MediChain Password', body: 'Please click the link to reset your password: {reset_link}', createdAt: '2024-02-01', updatedAt: '2024-02-20' },
   { id: 'TPL004', name: 'Promotional Offer', type: 'Push Notification', subject: '✨ New Deals Just For You!', body: 'Get 15% off on all vitamins this week. Tap to shop now!', createdAt: '2024-03-01', updatedAt: '2024-03-05' },
 ];
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
 
 export function NotificationTemplatesManagement() {
   const [templates, setTemplates] = useState(mockTemplates);
@@ -113,7 +124,7 @@ export function NotificationTemplatesManagement() {
                     <div className="text-xs text-muted-foreground">{template.subject || 'No Subject'}</div>
                 </TableCell>
                 <TableCell><Badge variant="outline">{template.type}</Badge></TableCell>
-                <TableCell>{new Date(template.updatedAt).toLocaleDateString()}</TableCell>
+                <TableCell><FormattedDate dateString={template.updatedAt} /></TableCell>
                 <TableCell className="text-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
