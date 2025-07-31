@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Edit, Mail, Phone, Calendar, DollarSign, Package, Shield, User, Truck, Clock } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, Shield, User, Clock, Calendar, DollarSign, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
@@ -47,309 +47,141 @@ const mockOrders = [
     { id: 'ORD001', customerId: 'USR001', status: 'Delivered', total: 45.50, createdAt: '2024-03-15'},
     { id: 'ORD005', customerId: 'USR001', status: 'Cancelled', total: 35.00, createdAt: '2024-03-14'},
     { id: 'ORD008', customerId: 'USR001', status: 'Delivered', total: 120.00, createdAt: '2024-03-10'},
-]
+];
 
-export function UserManagement() {
-  const [users, setUsers] = useState(mockUsers);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { toast } = useToast();
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
 
-  const filteredUsers = useMemo(() => {
-    return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, users]);
+    useEffect(() => {
+        setFormattedDate(new Date(dateString).toLocaleDateString());
+    }, [dateString]);
+
+    return <>{formattedDate}</>;
+}
+
+
+export default function UserDetailPage({ params }: { params: { id: string } }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // In a real app, you would fetch the user from an API
+    const foundUser = mockUsers.find(u => u.id === params.id);
+    setUser(foundUser || null);
+  }, [params.id]);
   
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter(u => u.id !== userId));
-    toast({ variant: "destructive", title: "User Deleted", description: "The user has been permanently deleted." });
+  const userOrders = user ? mockOrders.filter(o => o.customerId === user.id) : [];
+
+  if (!user) {
+    return <div className="p-8">User not found or loading...</div>;
   }
-  
-  const handleViewDetails = (user: User) => {
-    setSelectedUser(user);
-    setIsDetailDialogOpen(true);
-  }
-
-  const handleAddUser = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const newUser: User = {
-        id: `USR${String(users.length + 1).padStart(3, '0')}`,
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        role: formData.get('role') as UserRole,
-        status: 'Active',
-        createdAt: new Date().toISOString().split('T')[0],
-    };
-    setUsers([newUser, ...users]);
-    setIsAddUserDialogOpen(false);
-    toast({
-        title: "User Created",
-        description: "The new user has been successfully created.",
-    });
-  };
-
-  const getStatusBadgeVariant = (status: User['status']) => {
-    switch (status) {
-      case 'Active': return 'default';
-      case 'Inactive': return 'destructive';
-      case 'Pending': return 'secondary';
-    }
-  };
-  
-  const getRoleBadgeVariant = (role: User['role']) => {
-    switch (role) {
-      case 'Admin': return 'default';
-      case 'Pharmacy': return 'secondary';
-      default: return 'outline';
-    }
-  };
-  
-  const userOrders = selectedUser ? mockOrders.filter(o => o.customerId === selectedUser.id) : [];
 
   return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name or email..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+    <div className="space-y-6">
+        <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight font-headline">User Details</h1>
+                <p className="text-muted-foreground">Viewing full profile for {user.name}</p>
+            </div>
+            <Button asChild variant="outline">
+                <Link href="/admin/users">Back to User List</Link>
+            </Button>
         </div>
-        <Button onClick={() => setIsAddUserDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add User
-        </Button>
-      </div>
-      <div className="rounded-lg border mt-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map(user => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge></TableCell>
-                <TableCell><Badge variant={getStatusBadgeVariant(user.status)}>{user.status}</Badge></TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="text-center">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleViewDetails(user)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>This action cannot be undone. This will permanently delete the user account.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        <Separator/>
 
-       <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Fill out the form below to create a new user account.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleAddUser} className="space-y-4">
-              <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" name="name" placeholder="e.g. John Doe" required />
-              </div>
-               <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" name="email" type="email" placeholder="e.g. john.doe@example.com" required />
-              </div>
-               <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <Select name="role" defaultValue="Customer">
-                      <SelectTrigger id="role">
-                          <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Customer">Customer</SelectItem>
-                          <SelectItem value="Pharmacy">Pharmacy</SelectItem>
-                          <SelectItem value="Driver">Driver</SelectItem>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                      </SelectContent>
-                  </Select>
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" placeholder="Create a strong password" required />
-              </div>
-               <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Create User
-                  </Button>
-              </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-                <DialogTitle>User Details: {selectedUser?.name}</DialogTitle>
-                <DialogDescription>
-                    Viewing full details for {selectedUser?.email}.
-                </DialogDescription>
-            </DialogHeader>
-            {selectedUser && (
-                <div className="grid gap-6 md:grid-cols-3 max-h-[70vh] overflow-y-auto p-1">
-                    {/* Left Column - Profile */}
-                    <div className="md:col-span-1 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Profile</CardTitle>
-                                <CardDescription>User's personal information.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16">
-                                        <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
-                                        <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <h2 className="text-lg font-semibold">{selectedUser.name}</h2>
-                                        <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                                    </div>
-                                </div>
-                                <Separator />
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /> Role: <Badge variant="secondary">{selectedUser.role}</Badge></div>
-                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> Joined: {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
-                                    <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> Last Login: {selectedUser.lastLogin}</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Account</CardTitle>
-                                <CardDescription>Manage account status and actions.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Status</Label>
-                                    <Badge variant={selectedUser.status === 'Active' ? 'default' : 'destructive'}>{selectedUser.status}</Badge>
-                                </div>
-                                <Button className="w-full">Edit User</Button>
-                                <Button variant="outline" className="w-full">Reset Password</Button>
-                                <Button variant="destructive" className="w-full">Delete User</Button>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Right Column - Stats & History */}
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">${(selectedUser.totalSpent || 0).toFixed(2)}</div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                                    <Package className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{selectedUser.totalOrders || 0}</div>
-                                </CardContent>
-                            </Card>
+        <div className="grid gap-6 md:grid-cols-3">
+            <div className="md:col-span-1 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardDescription>User's personal information.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <h2 className="text-lg font-semibold">{user.name}</h2>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
                         </div>
-                        
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Order History</CardTitle>
-                                <CardDescription>A list of the user's recent orders.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Order ID</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {userOrders.map(order => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-medium">{order.id}</TableCell>
-                                                <TableCell><Badge variant={order.status === 'Delivered' ? 'default' : 'destructive'}>{order.status}</Badge></TableCell>
-                                                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                                                <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                    ))}
-                                    {userOrders.length === 0 && (
-                                        <TableRow><TableCell colSpan={4} className="text-center">No orders found.</TableCell></TableRow>
-                                    )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
+                        <Separator />
+                        <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /> Role: <Badge variant="secondary">{user.role}</Badge></div>
+                            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> Joined: <FormattedDate dateString={user.createdAt} /></div>
+                            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> Last Login: {user.lastLogin}</div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardDescription>Manage account status and actions.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <Label>Status</Label>
+                            <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>{user.status}</Badge>
+                        </div>
+                        <Button className="w-full">Edit User</Button>
+                        <Button variant="outline" className="w-full">Reset Password</Button>
+                        <Button variant="destructive" className="w-full">Delete User</Button>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="md:col-span-2 space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardDescription className="text-sm font-medium">Total Spent</CardDescription>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">${(user.totalSpent || 0).toFixed(2)}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardDescription className="text-sm font-medium">Total Orders</CardDescription>
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{user.totalOrders || 0}</div>
+                        </CardContent>
+                    </Card>
                 </div>
-            )}
-             <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+                
+                <Card>
+                    <CardHeader>
+                        <CardDescription>A list of the user's recent orders.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Order ID</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {userOrders.map(order => (
+                                    <TableRow key={order.id}>
+                                        <TableCell className="font-medium">{order.id}</TableCell>
+                                        <TableCell><Badge variant={order.status === 'Delivered' ? 'default' : 'destructive'}>{order.status}</Badge></TableCell>
+                                        <TableCell><FormattedDate dateString={order.createdAt} /></TableCell>
+                                        <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                                    </TableRow>
+                            ))}
+                            {userOrders.length === 0 && (
+                                <TableRow><TableCell colSpan={4} className="text-center">No orders found.</TableCell></TableRow>
+                            )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    </div>
+  )
 }
