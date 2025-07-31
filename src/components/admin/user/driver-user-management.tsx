@@ -10,11 +10,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, CheckCircle } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, Eye, UserPlus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, CheckCircle, Trash2, Pencil, UserCog } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 type UserRole = 'Customer' | 'Pharmacy' | 'Driver' | 'Admin';
@@ -30,21 +31,6 @@ type User = {
   avatarUrl?: string;
 };
 
-const mockUsers: User[] = [
-    { id: 'USR003', name: 'John Doe', email: 'john.d@example.com', role: 'Driver', status: 'Active', createdAt: '2023-05-20', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR006', name: 'Diana Prince', email: 'diana@driver.com', role: 'Driver', status: 'Pending', createdAt: '2024-03-01', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR013', name: 'Mike Ross', email: 'mike.r@driver.com', role: 'Driver', status: 'Inactive', createdAt: '2023-08-10', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR014', name: 'Harvey Specter', email: 'harvey.s@driver.com', role: 'Driver', status: 'Active', createdAt: '2022-11-25', avatarUrl: 'https://placehold.co/100x100.png' },
-];
-
-const allMockUsers: User[] = [
-    ...mockUsers,
-    { id: 'USR001', name: 'Alice Johnson', email: 'alice@example.com', role: 'Customer', status: 'Active', createdAt: '2023-10-26', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR002', name: 'Bob Williams', email: 'bob@pharmacy.com', role: 'Pharmacy', status: 'Active', createdAt: '2023-09-15', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR004', name: 'Admin User', email: 'admin@medichain.com', role: 'Admin', status: 'Active', createdAt: '2023-01-01', avatarUrl: 'https://placehold.co/100x100.png' },
-    { id: 'USR005', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Customer', status: 'Inactive', createdAt: '2024-01-10', avatarUrl: 'https://placehold.co/100x100.png' },
-];
-
 function FormattedDate({ dateString }: { dateString: string }) {
     const [formattedDate, setFormattedDate] = useState('');
 
@@ -58,12 +44,36 @@ function FormattedDate({ dateString }: { dateString: string }) {
 const PAGE_SIZE = 10;
 
 export function DriverUserManagement() {
-  const [users, setUsers] = useState(() => allMockUsers.filter(u => u.role === 'Driver'));
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/users?role=drivers');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not fetch driver users.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchUsers();
+  }, [toast]);
 
   const filteredUsers = useMemo(() => {
     let filtered = users;
@@ -99,7 +109,7 @@ export function DriverUserManagement() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const newUser: User = {
-        id: `USR${String(allMockUsers.length + users.length + 1).padStart(3, '0')}`,
+        id: `USR${String(users.length + 1 + 20).padStart(3, '0')}`,
         name: formData.get('name') as string,
         email: formData.get('email') as string,
         role: 'Driver',
@@ -189,7 +199,17 @@ export function DriverUserManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedUsers.map(user => (
+            {isLoading ? (
+                Array.from({length: 5}).map((_, index) => (
+                    <TableRow key={index}>
+                        <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                        <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                        <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                        <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                        <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                    </TableRow>
+                ))
+            ) : paginatedUsers.map(user => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
@@ -225,7 +245,7 @@ export function DriverUserManagement() {
                       <DropdownMenuSeparator/>
                        {user.status === 'Active' && (
                             <AlertDialog>
-                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Set Inactive</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}><UserCog className="mr-2 h-4 w-4" />Set Inactive</DropdownMenuItem></AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader><AlertDialogTitle>Set User to Inactive?</AlertDialogTitle><AlertDialogDescription>This will temporarily disable the user's account. Are you sure?</AlertDialogDescription></AlertDialogHeader>
                                     <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Inactive')}>Set Inactive</AlertDialogAction></AlertDialogFooter>
@@ -234,7 +254,7 @@ export function DriverUserManagement() {
                         )}
                         {user.status === 'Inactive' && (
                              <AlertDialog>
-                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Set Active</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}><UserCog className="mr-2 h-4 w-4" />Set Active</DropdownMenuItem></AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader><AlertDialogTitle>Set User to Active?</AlertDialogTitle><AlertDialogDescription>This will re-enable the user's account. Are you sure?</AlertDialogDescription></AlertDialogHeader>
                                     <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Active')}>Set Active</AlertDialogAction></AlertDialogFooter>
@@ -243,7 +263,7 @@ export function DriverUserManagement() {
                         )}
                         {user.status === 'Pending' && (
                              <AlertDialog>
-                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Approve</DropdownMenuItem></AlertDialogTrigger>
+                                <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()}><CheckCircle className="mr-2 h-4 w-4" />Approve</DropdownMenuItem></AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader><AlertDialogTitle>Approve this Driver?</AlertDialogTitle><AlertDialogDescription>This will mark the user as Active. Are you sure?</AlertDialogDescription></AlertDialogHeader>
                                     <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleUpdateStatus(user.id, 'Active')}>Approve</AlertDialogAction></AlertDialogFooter>
@@ -253,7 +273,7 @@ export function DriverUserManagement() {
                       <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -271,7 +291,7 @@ export function DriverUserManagement() {
                 </TableCell>
               </TableRow>
             ))}
-             {paginatedUsers.length === 0 && (
+             {paginatedUsers.length === 0 && !isLoading && (
                 <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                         No results found.

@@ -1,0 +1,6 @@
+[
+    { "id": "USR002", "name": "GoodHealth Pharmacy", "email": "contact@goodhealth.com", "role": "Pharmacy", "status": "Active", "createdAt": "2023-09-15", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR010", "name": "MediQuick Store", "email": "help@mediquick.com", "role": "Pharmacy", "status": "Pending", "createdAt": "2024-03-18", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR011", "name": "The Corner Drugstore", "email": "support@cornerdrug.com", "role": "Pharmacy", "status": "Active", "createdAt": "2022-11-01", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR012", "name": "City Central Pharma", "email": "billing@citypharma.com", "role": "Pharmacy", "status": "Inactive", "createdAt": "2023-03-19", "avatarUrl": "https://placehold.co/100x100.png" }
+]

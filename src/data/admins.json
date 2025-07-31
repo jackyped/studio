@@ -1,0 +1,5 @@
+[
+    { "id": "USR004", "name": "Admin User", "email": "admin@medichain.com", "role": "Admin", "status": "Active", "createdAt": "2023-01-01", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR015", "name": "Super Admin", "email": "super@medichain.com", "role": "Admin", "status": "Active", "createdAt": "2022-12-01", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR016", "name": "Support Admin", "email": "support@medichain.com", "role": "Admin", "status": "Inactive", "createdAt": "2023-02-01", "avatarUrl": "https://placehold.co/100x100.png" }
+]

@@ -1,0 +1,6 @@
+[
+    { "id": "USR003", "name": "John Doe", "email": "john.d@example.com", "role": "Driver", "status": "Active", "createdAt": "2023-05-20", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR006", "name": "Diana Prince", "email": "diana@driver.com", "role": "Driver", "status": "Pending", "createdAt": "2024-03-01", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR013", "name": "Mike Ross", "email": "mike.r@driver.com", "role": "Driver", "status": "Inactive", "createdAt": "2023-08-10", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR014", "name": "Harvey Specter", "email": "harvey.s@driver.com", "role": "Driver", "status": "Active", "createdAt": "2022-11-25", "avatarUrl": "https://placehold.co/100x100.png" }
+]

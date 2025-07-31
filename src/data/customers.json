@@ -1,0 +1,7 @@
+[
+    { "id": "USR001", "name": "Alice Johnson", "email": "alice@example.com", "role": "Customer", "status": "Active", "createdAt": "2023-10-26", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR005", "name": "Charlie Brown", "email": "charlie@example.com", "role": "Customer", "status": "Inactive", "createdAt": "2024-01-10", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR007", "name": "Frank Miller", "email": "frank@example.com", "role": "Customer", "status": "Active", "createdAt": "2023-11-05", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR008", "name": "Grace Lee", "email": "grace@example.com", "role": "Customer", "status": "Active", "createdAt": "2023-12-12", "avatarUrl": "https://placehold.co/100x100.png" },
+    { "id": "USR009", "name": "Heidi Turner", "email": "heidi@example.com", "role": "Customer", "status": "Inactive", "createdAt": "2024-02-01", "avatarUrl": "https://placehold.co/100x100.png" }
+]
