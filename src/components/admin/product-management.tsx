@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag, Sparkles, Loader2, Settings } from 'lucide-react';
+import { Search, MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Archive, ArchiveRestore, History, Pill, User, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Tag, Sparkles, Loader2, Settings, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -82,119 +82,6 @@ const mockProducts: Product[] = [
 
 const PAGE_SIZE = 10;
 
-function CategoryManager({ open, onOpenChange, categories, onCategoriesChange }: { open: boolean, onOpenChange: (open: boolean) => void, categories: Category[], onCategoriesChange: (categories: Category[]) => void }) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [currentCategory, setCurrentCategory] = useState<Partial<Category> | null>(null);
-    const { toast } = useToast();
-
-    const handleOpenForm = (category?: Category) => {
-        setCurrentCategory(category || {});
-        setIsFormOpen(true);
-    };
-
-    const handleSaveCategory = () => {
-        if (currentCategory?.id) {
-            onCategoriesChange(categories.map(c => c.id === currentCategory.id ? { ...c, ...currentCategory } as Category : c));
-            toast({ title: "Category Updated", description: `Category "${currentCategory.name}" has been updated.` });
-        } else {
-            const newCategory: Category = {
-                id: `CAT${String(categories.length + 1).padStart(3, '0')}`,
-                name: currentCategory?.name || 'Untitled Category',
-                description: currentCategory?.description || '',
-                productCount: 0,
-                createdAt: new Date().toISOString().split('T')[0],
-            };
-            onCategoriesChange([newCategory, ...categories]);
-            toast({ title: "Category Created", description: `Category "${newCategory.name}" has been created.` });
-        }
-        setIsFormOpen(false);
-        setCurrentCategory(null);
-    };
-
-    const handleDeleteCategory = (categoryId: string) => {
-        onCategoriesChange(categories.filter(c => c.id !== categoryId));
-        toast({ variant: "destructive", title: "Category Deleted", description: "The category has been permanently deleted." });
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>Drug Category Management</DialogTitle>
-                    <DialogDescription>Manage the categories for all drugs in the system.</DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    <div className="flex justify-end mb-4">
-                        <Button onClick={() => handleOpenForm()}><PlusCircle className="mr-2 h-4 w-4"/>New Category</Button>
-                    </div>
-                    <div className="rounded-lg border">
-                        <Table>
-                            <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Description</TableHead><TableHead>Product Count</TableHead><TableHead className="text-center">Actions</TableHead></TableRow></TableHeader>
-                            <TableBody>
-                                {categories.map(cat => (
-                                    <TableRow key={cat.id}>
-                                        <TableCell className="font-medium">{cat.name}</TableCell>
-                                        <TableCell>{cat.description}</TableCell>
-                                        <TableCell>{cat.productCount}</TableCell>
-                                        <TableCell className="text-center">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem onClick={() => handleOpenForm(cat)}>Edit</DropdownMenuItem>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem></AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>This will permanently delete the category. This action cannot be undone.</AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteCategory(cat.id)}>Delete</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
-
-                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>{currentCategory?.id ? 'Edit Category' : 'Create New Category'}</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="cat-name">Category Name</Label>
-                                <Input id="cat-name" value={currentCategory?.name || ''} onChange={e => setCurrentCategory({...currentCategory, name: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cat-desc">Description</Label>
-                                <Textarea id="cat-desc" value={currentCategory?.description || ''} onChange={e => setCurrentCategory({...currentCategory, description: e.target.value})} />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                            <Button onClick={handleSaveCategory}>Save Category</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
-}
-
-
 export function ProductManagement() {
   const [products, setProducts] = useState(mockProducts);
   const [categories, setCategories] = useState(mockCategories);
@@ -203,7 +90,6 @@ export function ProductManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product> | null>(null);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [isAiConfirmOpen, setIsAiConfirmOpen] = useState(false);
@@ -359,11 +245,6 @@ export function ProductManagement() {
                 </Button>
             ))}
           </div>
-          <Separator className="my-4" />
-           <Button variant="outline" className="w-full justify-start" onClick={() => setIsCategoryManagerOpen(true)}>
-            <Settings className="mr-2 h-4 w-4" />
-            Manage Categories
-           </Button>
       </aside>
 
       {/* Main Content */}
@@ -441,7 +322,9 @@ export function ProductManagement() {
                             <DropdownMenuSeparator />
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => handleOpenForm(product)}>Edit Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenForm(product)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                        </DropdownMenuItem>
                          {product.status === 'Approved' && (
                            <DropdownMenuItem onClick={() => handleUpdateStatus(product.id, 'Shelved')}>
                              <Archive className="mr-2 h-4 w-4" /> Globally Shelf
@@ -458,7 +341,9 @@ export function ProductManagement() {
                         <DropdownMenuSeparator />
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">Delete Product</DropdownMenuItem>
+                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Product
+                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>
@@ -619,8 +504,6 @@ export function ProductManagement() {
         </DialogContent>
       </Dialog>
 
-      <CategoryManager open={isCategoryManagerOpen} onOpenChange={setIsCategoryManagerOpen} categories={categories} onCategoriesChange={setCategories} />
-
       {/* AI Confirmation Dialog */}
        <AlertDialog open={isAiConfirmOpen} onOpenChange={setIsAiConfirmOpen}>
         <AlertDialogContent>
@@ -639,3 +522,5 @@ export function ProductManagement() {
     </div>
   );
 }
+
+    

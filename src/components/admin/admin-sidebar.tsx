@@ -37,11 +37,9 @@ import {
   Cog,
   Tag,
   Gift,
-  Search,
   PenSquare,
   BarChart2,
   Files,
-  Archive,
   UserSquare2,
   ShieldCheck,
 } from 'lucide-react';
@@ -87,7 +85,7 @@ const notificationMenuItems = [
     { href: '/admin/notifications/tracking', label: 'Tracking', icon: Eye },
 ];
 
-const assetsMenuItems = [
+const systemMenuItems = [
     { href: '/admin/system/files', label: 'File Management', icon: Files },
 ];
 
@@ -100,8 +98,6 @@ export function AdminSidebar() {
 
   const isActive = (path: string, exact = false) => {
     if (exact) return pathname === path;
-    // For parent items, we want to match if the path starts with the href, but not if there's a more specific match.
-    // e.g. /admin/users should not activate /admin menu item
     if (path === '/admin') return pathname === '/admin';
     return pathname.startsWith(path);
   };
@@ -226,15 +222,15 @@ export function AdminSidebar() {
            <Collapsible asChild>
             <SidebarMenuItem className="flex-col">
               <CollapsibleTrigger asChild>
-                  <SidebarMenuButton isActive={isActive('/admin/assets')} className="w-full">
-                      <Archive />
-                      <span>Assets</span>
+                  <SidebarMenuButton isActive={isActive('/admin/system')} className="w-full">
+                      <Cog />
+                      <span>System</span>
                       <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent asChild>
                   <SidebarMenu className="pl-6 pt-1">
-                      {assetsMenuItems.map((item) => (
+                      {systemMenuItems.map((item) => (
                           <SidebarMenuItem key={item.href}>
                               <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
                                   <Link href={item.href}>
@@ -280,9 +276,18 @@ export function AdminSidebar() {
             <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Billing</DropdownMenuItem>
-                <DropdownMenuItem>Team</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CircleDollarSign className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Users className="mr-2 h-4 w-4" />
+                  <span>Team</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -294,3 +299,5 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
+
+    
