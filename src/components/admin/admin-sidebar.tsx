@@ -26,17 +26,19 @@ import {
   HelpCircle,
   Settings,
   LogOut,
-  ChevronDown,
   ChevronRight,
   CircleDollarSign,
   Building,
-  UserCog
+  UserCog,
+  FileText,
+  Send,
+  RadioTower,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutGrid },
@@ -53,6 +55,14 @@ const financeMenuItems = [
     { href: '/admin/finance/platform-revenue', label: 'Platform Revenue', icon: CircleDollarSign },
     { href: '/admin/finance/pharmacy-revenue', label: 'Pharmacy Revenue', icon: Building },
     { href: '/admin/finance/driver-revenue', label: 'Driver Revenue', icon: UserCog },
+];
+
+const notificationMenuItems = [
+    { href: '/admin/notifications/templates', label: 'Templates', icon: FileText },
+    { href: '/admin/notifications/channels', label: 'Channels', icon: RadioTower },
+    { href: '/admin/notifications/create', label: 'Create', icon: Send },
+    { href: '/admin/notifications/publish', label: 'Publish', icon: Send },
+    { href: '/admin/notifications/tracking', label: 'Tracking', icon: Eye },
 ];
 
 const helpAndSettingsItems = [
@@ -110,15 +120,31 @@ export function AdminSidebar() {
               </CollapsibleContent>
             </SidebarMenuItem>
            </Collapsible>
-
-          <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive('/admin/notifications')} tooltip={{children: 'Notifications'}}>
-                <Link href="/admin/notifications">
-                  <Bell />
-                  <span>Notifications</span>
-                </Link>
-              </SidebarMenuButton>
+           <Collapsible asChild>
+            <SidebarMenuItem className="flex-col">
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton isActive={isActive('/admin/notifications')} className="w-full">
+                      <Bell />
+                      <span>Notifications</span>
+                      <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent asChild>
+                  <SidebarMenu className="pl-6 pt-1">
+                      {notificationMenuItems.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                              <SidebarMenuButton asChild isActive={isActive(item.href, true)} size="sm" tooltip={{children: item.label}}>
+                                  <Link href={item.href}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                  </Link>
+                              </SidebarMenuButton>
+                          </SidebarMenuItem>
+                      ))}
+                  </SidebarMenu>
+              </CollapsibleContent>
             </SidebarMenuItem>
+           </Collapsible>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2">
@@ -145,7 +171,7 @@ export function AdminSidebar() {
                         <p className="font-medium text-sm">Admin User</p>
                         <p className="text-xs text-muted-foreground">admin@medichain.com</p>
                     </div>
-                    <ChevronDown className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden"/>
+                    <ChevronRight className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden"/>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mb-2" side="top" align="start">

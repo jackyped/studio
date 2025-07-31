@@ -1,0 +1,17 @@
+import { NotificationCreation } from '@/components/admin/notifications/notification-creation';
+import { Separator } from '@/components/ui/separator';
+
+export default function NotificationCreationPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight font-headline">Create Notification</h1>
+        <p className="text-muted-foreground">
+          Author a new notification for publishing.
+        </p>
+      </div>
+      <Separator />
+      <NotificationCreation />
+    </div>
+  );
+}
